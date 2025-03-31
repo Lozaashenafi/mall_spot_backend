@@ -5,13 +5,12 @@ CREATE TABLE `User` (
     `fullName` VARCHAR(191) NOT NULL,
     `password` VARCHAR(191) NOT NULL,
     `email` VARCHAR(191) NOT NULL,
+    `mallId` INTEGER NULL,
     `phoneNumber` VARCHAR(191) NULL,
     `status` ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE',
     `role` ENUM('ADMIN', 'USER', 'TENANT', 'MALL_OWNER') NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    UNIQUE INDEX `User_username_key`(`username`),
+    `updatedAt` DATETIME(3) NOT NULL,UNIQUE INDEX `User_username_key`(`username`),
     UNIQUE INDEX `User_email_key`(`email`),
     INDEX `User_email_idx`(`email`),
     INDEX `User_username_idx`(`username`),
@@ -19,19 +18,35 @@ CREATE TABLE `User` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `PricePerCare` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `mallId` INTEGER NOT NULL,
+    `price` DOUBLE NOT NULL,
+    `floor` INTEGER NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `Mall` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `mallName` VARCHAR(191) NOT NULL,
-    `location` VARCHAR(191) NOT NULL,
+    `latitude` DOUBLE NOT NULL,
+    `longitude` DOUBLE NOT NULL,
+    `address` VARCHAR(191) NOT NULL,
     `description` VARCHAR(191) NULL,
     `totalFloors` INTEGER NOT NULL,
     `totalRooms` INTEGER NOT NULL,
-    `userId` INTEGER NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    UNIQUE INDEX `Mall_mallName_key`(`mallName`),
+    `updatedAt` DATETIME(3) NOT NULL,UNIQUE INDEX `Mall_mallName_key`(`mallName`),
     PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `MallImage` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `mallId` INTEGER NOT NULL,
+    `imageURL` VARCHAR(191) NOT NULL,PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -43,12 +58,11 @@ CREATE TABLE `Post` (
     `description` VARCHAR(191) NULL,
     `price` DOUBLE NULL,
     `bidDeposit` DOUBLE NULL,
+    `bidEndDate` DATETIME(3) NULL,
     `userId` INTEGER NOT NULL,
     `status` ENUM('PENDING', 'INVISIBLE') NOT NULL DEFAULT 'PENDING',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    INDEX `Post_title_idx`(`title`),
+    `updatedAt` DATETIME(3) NOT NULL,INDEX `Post_title_idx`(`title`),
     INDEX `Post_userId_idx`(`userId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -57,9 +71,7 @@ CREATE TABLE `Post` (
 CREATE TABLE `PostImage` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `postId` INTEGER NOT NULL,
-    `imageURL` VARCHAR(191) NOT NULL,
-
-    PRIMARY KEY (`id`)
+    `imageURL` VARCHAR(191) NOT NULL,PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -69,9 +81,7 @@ CREATE TABLE `Bid` (
     `postId` INTEGER NOT NULL,
     `bidAmount` DOUBLE NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    INDEX `Bid_userId_idx`(`userId`),
+    `updatedAt` DATETIME(3) NOT NULL,INDEX `Bid_userId_idx`(`userId`),
     INDEX `Bid_postId_idx`(`postId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -83,9 +93,7 @@ CREATE TABLE `Deposit` (
     `userId` INTEGER NOT NULL,
     `amount` DOUBLE NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    PRIMARY KEY (`id`)
+    `updatedAt` DATETIME(3) NOT NULL,PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -95,9 +103,7 @@ CREATE TABLE `Winner` (
     `userId` INTEGER NOT NULL,
     `winningAmount` DOUBLE NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    UNIQUE INDEX `Winner_bidId_key`(`bidId`),
+    `updatedAt` DATETIME(3) NOT NULL,UNIQUE INDEX `Winner_bidId_key`(`bidId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -109,9 +115,7 @@ CREATE TABLE `Notification` (
     `type` ENUM('BID', 'MESSAGE', 'SYSTEM', 'ALERT') NOT NULL,
     `status` ENUM('UNREAD', 'READ', 'ARCHIVED') NOT NULL DEFAULT 'UNREAD',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    PRIMARY KEY (`id`)
+    `updatedAt` DATETIME(3) NOT NULL,PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -121,9 +125,7 @@ CREATE TABLE `Floor` (
     `floorNumber` INTEGER NOT NULL,
     `description` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    PRIMARY KEY (`id`)
+    `updatedAt` DATETIME(3) NOT NULL,PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -133,9 +135,7 @@ CREATE TABLE `Payment` (
     `amount` DOUBLE NOT NULL,
     `paymentDate` DATETIME(3) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    PRIMARY KEY (`id`)
+    `updatedAt` DATETIME(3) NOT NULL,PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -145,9 +145,7 @@ CREATE TABLE `Profile` (
     `profileImage` VARCHAR(191) NULL,
     `bio` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    UNIQUE INDEX `Profile_userId_key`(`userId`),
+    `updatedAt` DATETIME(3) NOT NULL,UNIQUE INDEX `Profile_userId_key`(`userId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -157,9 +155,7 @@ CREATE TABLE `Agreement` (
     `mallId` INTEGER NOT NULL,
     `agreementFile` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    PRIMARY KEY (`id`)
+    `updatedAt` DATETIME(3) NOT NULL,PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -168,41 +164,48 @@ CREATE TABLE `Rent` (
     `userId` INTEGER NOT NULL,
     `roomId` INTEGER NOT NULL,
     `amount` DOUBLE NOT NULL,
-    `dueDate` DATETIME(3) NOT NULL,
+    `PaymentDuration` INTEGER NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    UNIQUE INDEX `Rent_roomId_key`(`roomId`),
+    `updatedAt` DATETIME(3) NOT NULL,UNIQUE INDEX `Rent_roomId_key`(`roomId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `Rooms` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `mallId` INTEGER NOT NULL,
     `floorId` INTEGER NOT NULL,
     `roomNumber` VARCHAR(191) NOT NULL,
-    `size` DOUBLE NOT NULL,
-    `price` DOUBLE NOT NULL,
+    `care` DOUBLE NOT NULL,
+    `price` DOUBLE NULL,
     `status` ENUM('AVAILABLE', 'OCCUPIED', 'UNDER_MAINTENANCE') NOT NULL DEFAULT 'AVAILABLE',
     `categoryId` INTEGER NULL,
+    `hasWindow` BOOLEAN NOT NULL DEFAULT false,
+    `pricePerCare` BOOLEAN NOT NULL DEFAULT true,
+    `hasBalcony` BOOLEAN NOT NULL DEFAULT false,
+    `hasAttachedBathroom` BOOLEAN NOT NULL DEFAULT false,
+    `hasParkingSpace` BOOLEAN NOT NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    INDEX `Rooms_roomNumber_idx`(`roomNumber`),
+    `updatedAt` DATETIME(3) NOT NULL,INDEX `Rooms_roomNumber_idx`(`roomNumber`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `Category` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `categoryName` VARCHAR(191) NOT NULL,
-
-    PRIMARY KEY (`id`)
+    `categoryName` VARCHAR(191) NOT NULL,PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `Mall` ADD CONSTRAINT `Mall_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `User` ADD CONSTRAINT `User_mallId_fkey` FOREIGN KEY (`mallId`) REFERENCES `Mall`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `PricePerCare` ADD CONSTRAINT `PricePerCare_floor_fkey` FOREIGN KEY (`floor`) REFERENCES `Floor`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `PricePerCare` ADD CONSTRAINT `PricePerCare_mallId_fkey` FOREIGN KEY (`mallId`) REFERENCES `Mall`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `MallImage` ADD CONSTRAINT `MallImage_mallId_fkey` FOREIGN KEY (`mallId`) REFERENCES `Mall`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Post` ADD CONSTRAINT `Post_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -254,9 +257,6 @@ ALTER TABLE `Rent` ADD CONSTRAINT `Rent_userId_fkey` FOREIGN KEY (`userId`) REFE
 
 -- AddForeignKey
 ALTER TABLE `Rent` ADD CONSTRAINT `Rent_roomId_fkey` FOREIGN KEY (`roomId`) REFERENCES `Rooms`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Rooms` ADD CONSTRAINT `Rooms_mallId_fkey` FOREIGN KEY (`mallId`) REFERENCES `Mall`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Rooms` ADD CONSTRAINT `Rooms_floorId_fkey` FOREIGN KEY (`floorId`) REFERENCES `Floor`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
