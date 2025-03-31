@@ -26,6 +26,8 @@ jobs:
 
       # Step 4: Build the Project
       - name: Build Project
+        run: |
+          npm install --legacy-peer-deps
         env:
           PORT: 5000
           BASE_URL: http://localhost:5555
