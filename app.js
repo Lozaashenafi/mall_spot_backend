@@ -30,6 +30,6 @@ app.get("/", (req, res) => {
 
 // Start the server, listen on all network interfaces
 const PORT = config.PORT || 5000;
-app.listen(PORT, "192.168.43.129", () => {
-  console.log(`http://192.168.43.129:${PORT}   Server is running  `);
+app.listen(PORT, () => {
+  console.log(`http://localhost:${PORT}   Server is running  `);
 });
