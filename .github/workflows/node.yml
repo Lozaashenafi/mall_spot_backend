@@ -35,8 +35,11 @@ jobs:
           JWT_SECRET: tsgedTsehay
 
       # Step 5: Prepare Deployment Package
+      - name: Copy Files to Temporary Directory
+        run: rsync -a . /tmp/deployment-copy --exclude=node_modules --exclude=.git
+
       - name: Archive Build Folder
-        run: tar --exclude='node_modules' -czf backend.tar.gz -C . .
+        run: tar -czf backend.tar.gz -C /tmp/deployment-copy .
 
       # # Step 6: Install lftp
       # - name: Install lftp
