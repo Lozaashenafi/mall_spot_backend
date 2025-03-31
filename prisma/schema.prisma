@@ -1,0 +1,268 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum PostStatus {
+  PENDING
+  INVISIBLE
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+  ARCHIVED
+}
+
+enum NotificationType {
+  BID
+  MESSAGE
+  SYSTEM
+  ALERT
+}
+
+enum RoomStatus {
+  AVAILABLE
+  OCCUPIED
+  UNDER_MAINTENANCE
+}
+
+enum UserRole {
+  ADMIN
+  USER
+  TENANT
+  MALL_OWNER
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  username      String         @unique
+  fullName      String
+  password      String
+  email         String         @unique
+  mallId        Int?           // Optional field
+  Mall          Mall?          @relation(fields: [mallId], references: [id]) // Optional relation
+  phoneNumber   String?
+  status        UserStatus     @default(ACTIVE)
+  role          UserRole       
+  bids          Bid[]          
+  notifications Notification[] 
+  profile       Profile?       
+  rents         Rent[]         
+  posts         Post[]         
+  winner        Winner[]       
+  deposit       Deposit[]     
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  @@index([email]) 
+  @@index([username]) 
+}
+
+model PricePerCare{
+  id Int @id @default(autoincrement())
+  mallId Int
+  price Float
+  floor Int?
+  Floor Floor? @relation(fields: [floor], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  mall Mall @relation(fields: [mallId], references: [id])
+}
+
+model Mall {
+  id          Int          @id @default(autoincrement())
+  mallName    String       @unique // Ensure mall names are unique
+  latitude    Float
+  longitude   Float
+  address     String
+  description String?
+  totalFloors Int
+  totalRooms  Int
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  floors      Floor[]
+  agreements  Agreement[]
+  posts       Post[]
+  user        User[]
+  pricePerCare PricePerCare[]
+  mallImage   MallImage[]
+}
+
+model MallImage {
+  id       Int     @id @default(autoincrement())
+  mallId   Int
+  imageURL String
+  mall     Mall    @relation(fields: [mallId], references: [id]) // Corrected relation
+}
+
+model Post {
+  id          Int         @id @default(autoincrement())
+  mallId      Int
+  roomId      Int
+  title       String      // Add @required if title is mandatory
+  description String?
+  price       Float?
+  bidDeposit  Float?
+  bidEndDate  DateTime?
+  userId      Int
+  status      PostStatus  @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  user        User        @relation(fields: [userId], references: [id])
+  mall        Mall        @relation(fields: [mallId], references: [id])
+  room        Rooms       @relation(fields: [roomId], references: [id])
+  bids        Bid[]
+  images      PostImage[]
+
+  @@index([title]) // Add index on the title field
+  @@index([userId]) // Add index on the userId field
+}
+
+model PostImage {
+  id       Int     @id @default(autoincrement())
+  postId   Int
+  imageURL String
+  post     Post    @relation(fields: [postId], references: [id])
+}
+
+model Bid {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  postId    Int
+  bidAmount Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id])
+  deposits  Deposit[] // One bid can have many deposits
+  winner    Winner?   // One bid can have one winner
+
+  @@index([userId]) // Add index on the userId field
+  @@index([postId]) // Add index on the postId field
+}
+
+model Deposit {
+  id        Int      @id @default(autoincrement())
+  bidId     Int
+  userId    Int      // Deposit is made by a user
+  amount    Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  bid       Bid      @relation(fields: [bidId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Winner {
+  id            Int      @id @default(autoincrement())
+  bidId         Int      @unique
+  userId        Int
+  winningAmount Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  bid           Bid      @relation(fields: [bidId], references: [id])
+  user          User     @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  message   String
+  type      NotificationType
+  status    NotificationStatus @default(UNREAD)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Floor {
+  id          Int      @id @default(autoincrement())
+  mallId      Int
+  floorNumber Int
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  mall        Mall     @relation(fields: [mallId], references: [id])
+  rooms       Rooms[]  // One floor can have many rooms
+  pricePerCare PricePerCare[]
+}
+
+model Payment {
+  id          Int      @id @default(autoincrement())
+  rentId      Int
+  amount      Float
+  paymentDate DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  rent        Rent     @relation(fields: [rentId], references: [id])
+}
+
+model Profile {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @unique
+  profileImage String?
+  bio          String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id])
+}
+
+model Agreement {
+  id            Int      @id @default(autoincrement())
+  mallId        Int
+  agreementFile String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  mall          Mall     @relation(fields: [mallId], references: [id])
+}
+
+model Rent {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  roomId    Int     @unique
+  amount    Float
+  PaymentDuration   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  room      Rooms    @relation(fields: [roomId], references: [id])
+  payments  Payment[] // One rent can have many payments
+}
+
+model Rooms {
+  id         Int      @id @default(autoincrement())
+  floorId    Int
+  roomNumber String    
+  care       Float
+  price      Float?
+  status     RoomStatus @default(AVAILABLE)
+  categoryId Int?
+  hasWindow  Boolean @default(false)
+  pricePerCare Boolean @default(true)
+  hasBalcony Boolean @default(false)
+  hasAttachedBathroom Boolean @default(false)
+  hasParkingSpace Boolean @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  floor      Floor    @relation(fields: [floorId], references: [id])
+  category   Category? @relation(fields: [categoryId], references: [id])
+  posts      Post[]
+  rent       Rent?    
+  
+  @@index([roomNumber]) // Add index on the roomNumber field
+}
+
+model Category {
+  id           Int     @id @default(autoincrement())
+  categoryName String
+  rooms        Rooms[] // One category can have many rooms
+}
