@@ -36,7 +36,7 @@ jobs:
 
       # Step 5: Prepare Deployment Package
       - name: Archive Build Folder
-        run: tar --warning=no-file-changed -czf backend.tar.gz .
+        run: tar --exclude='node_modules' -czf backend.tar.gz -C . .
 
       # # Step 6: Install lftp
       # - name: Install lftp
