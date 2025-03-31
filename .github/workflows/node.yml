@@ -37,8 +37,7 @@ jobs:
       # Step 5: Prepare Deployment Package
       - name: Archive Build Folder
         # run: tar -czf build.tar.gz dist package.json package-lock.json
-        run: tar --exclude='node_modules' -czf backend.tar.gz -C backend
-
+        run: tar --exclude='node_modules' -czf backend.tar.gz backend
       # # Step 6: Install lftp
       # - name: Install lftp
       #   run: sudo apt-get install -y lftp
