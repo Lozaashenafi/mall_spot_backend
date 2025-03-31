@@ -53,21 +53,21 @@ jobs:
           password: mallspot@123
 
       # Step 8: Deploy Build to Remote SSH Server
-      - name: Deploy with tar over SSH
-        env:
-          SSH_USERNAME: awrasaix
-          SSH_HOST: 91.204.209.22
-          SSH_PORT: 22
-          REMOTE_PATH: ~/mallspot.awrasacademy.org/
-        run: |
-          # Ensure the SSH key is available
-          echo "${{ secrets.SSH_PRIVATE }}" > private_key.pem
-          chmod 600 private_key.pem
+      # - name: Deploy with tar over SSH
+      #   env:
+      #     SSH_USERNAME: awrasaix
+      #     SSH_HOST: 91.204.209.22
+      #     SSH_PORT: 22
+      #     REMOTE_PATH: ~/mallspot.awrasacademy.org/
+      #   run: |
+      #     # Ensure the SSH key is available
+      #     echo "${{ secrets.SSH_PRIVATE }}" > private_key.pem
+      #     chmod 600 private_key.pem
 
-          # Run commands on the server
-          ssh -i private_key.pem -p "$SSH_PORT" -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
-            cd /home/awrasaix/mallspot.awrasacademy.org &&
-            cloudlinux-selector install-modules --json --interpreter nodejs --user awrasaix --app-root mallspot.awrasacademy.org"
+      #     # Run commands on the server
+      #     ssh -i private_key.pem -p "$SSH_PORT" -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
+      #       cd /home/awrasaix/mallspot.awrasacademy.org &&
+      #       cloudlinux-selector install-modules --json --interpreter nodejs --user awrasaix --app-root mallspot.awrasacademy.org"
 
-          # Clean up the private key
-          rm -f private_key.pem
+      #     # Clean up the private key
+      #     rm -f private_key.pem
