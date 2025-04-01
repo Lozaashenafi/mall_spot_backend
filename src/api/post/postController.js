@@ -84,7 +84,18 @@ export const getPosts = async (req, res) => {
       where: {
         status: "PENDING",
       },
-      include: { room: true },
+      include: {
+        user: true,
+        mall: true, // This will fetch the associated mall for the post
+        room: true, // Fetch room information for the post
+        bids: true, // Fetch bids associated with the post
+        images: {
+          // Fetch images associated with the post
+          select: {
+            imageURL: true, // Adjust based on your field name in the PostImage model
+          },
+        },
+      },
     });
     res.json(posts);
   } catch (error) {
