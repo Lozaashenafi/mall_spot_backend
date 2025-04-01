@@ -5,10 +5,11 @@ export default {
     fullName: Joi.string().required(),
     email: Joi.string().email().required(),
     password: Joi.string().min(6).required(),
+    phoneNumber: Joi.string().pattern(/^\d+$/).required(), // Ensures only digits
   }),
 
   login: Joi.object({
-    email: Joi.string().email().required(),
+    emailOrPhone: Joi.string().required(), // Allow either email or phone number
     password: Joi.string().required(),
   }),
 };

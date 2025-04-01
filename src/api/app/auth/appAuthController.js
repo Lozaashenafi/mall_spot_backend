@@ -7,16 +7,25 @@ export const register = async (req, res) => {
   try {
     // Validate request body
     const { error } = authSchema.register.validate(req.body);
-    if (error)
+    if (error) {
       return res.status(400).json({ message: error.details[0].message });
+    }
 
     const { fullName, email, password, phoneNumber } = req.body;
-    console.log(fullName, email, password, phoneNumber);
 
-    // Check if user already exists
+    // Check if email already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser)
+    if (existingUser) {
       return res.status(400).json({ message: "Email already in use" });
+    }
+
+    // Check if phoneNumber already exists (Use findFirst instead of findUnique)
+    const existingPhone = await prisma.user.findFirst({
+      where: { phoneNumber },
+    });
+    if (existingPhone) {
+      return res.status(400).json({ message: "Phone number already in use" });
+    }
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -41,6 +50,7 @@ export const register = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 export const login = async (req, res) => {
   try {
     // Validate request body
