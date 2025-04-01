@@ -9,7 +9,7 @@ import {
 const router = express.Router();
 
 router.post("/add", uploadPostImages, addPosts);
-router.get("/:id", postDetail);
+router.get("/list/:id", postDetail);
 router.get("/list", getPosts);
 
 export default router;
