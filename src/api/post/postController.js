@@ -102,6 +102,38 @@ export const getPosts = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch posts" });
   }
 };
+export const getMyPosts = async (req, res) => {
+  try {
+    const { userId } = req.query; // Extract userId from query parameters
+
+    // Log userId to check its value
+    console.log("Received userId:", userId);
+
+    // Ensure userId is present and a valid number
+    if (!userId || isNaN(userId)) {
+      return res.status(400).json({ error: "Invalid or missing userId" });
+    }
+
+    // Convert userId to a number
+    const numericUserId = Number(userId);
+
+    const posts = await prisma.post.findMany({
+      where: { userId: numericUserId },
+      include: {
+        user: true,
+        mall: true,
+        room: true,
+        bids: true,
+        images: { select: { imageURL: true } },
+      },
+    });
+
+    res.json(posts);
+  } catch (error) {
+    console.error("Error fetching user posts:", error);
+    res.status(500).json({ error: "Failed to fetch user posts" });
+  }
+};
 
 export const postDetail = async (req, res) => {
   try {

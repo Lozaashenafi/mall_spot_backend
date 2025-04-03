@@ -7,7 +7,8 @@ import rentRoute from "../api/rent/rentRoute.js";
 import paymentRoute from "../api/payment/paymentRoute.js";
 import appAuthRoute from "../api/app/auth/appAuthRoute.js";
 import postRoute from "../api/post/postRoute.js";
-// import requestRoute from "../api/request/requestRoute.js";
+import requestRoute from "../api/app/request/requestRoute.js";
+import requestOwnerRoute from "../api/request/requestOwnerRoute.js";
 const router = express.Router();
 
 // Auth routes
@@ -19,6 +20,7 @@ router.use("/tenant", tenantRoute);
 router.use("/rent", rentRoute);
 router.use("/payment", paymentRoute);
 router.use("/post", postRoute);
-// router.use("/request", requestRoute);
+router.use("/request", requestRoute);
+router.use("/owner/request", requestOwnerRoute);
 
 export default router;
