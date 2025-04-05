@@ -92,7 +92,16 @@ export const login = async (req, res) => {
       expiresIn: "12h", // token will expire in 12 hours
     });
 
-    res.json({ message: "Login successful", token, success: true });
+    res.json({
+      message: "Login successful",
+      token,
+      userData: {
+        username: user.fullName,
+        userId: user.id,
+        role: user.role,
+      },
+      success: true,
+    });
   } catch (error) {
     res
       .status(500)
