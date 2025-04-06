@@ -57,7 +57,7 @@ model User {
   password      String
   email         String         @unique
   mallId        Int?           // Optional field
-  Mall          Mall?          @relation(fields: [mallId], references: [id]) // Optional relation
+  Mall          Mall?          @relation(fields: [mallId], references: [id]) 
   phoneNumber   String?
   status        UserStatus     @default(ACTIVE)
   role          UserRole       

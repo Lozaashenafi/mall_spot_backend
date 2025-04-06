@@ -95,22 +95,32 @@ export const addRequest = async (req, res) => {
     }
   });
 };
-// Route to get all requests for a specific user
+
 export const getRequests = async (req, res) => {
   try {
     const { userId } = req.params; // Get userId from the request params
 
-    // Fetch all requests for the given userId
     const requests = await prisma.request.findMany({
-      where: { userId: parseInt(userId) }, // Ensure the userId is passed correctly
+      where: { userId: parseInt(userId) },
       include: {
-        user: { select: { id: true, userName: true, userEmail: true } }, // Include related user details if needed
-        post: { select: { id: true, title: true } }, // Include post details if needed
+        user: {
+          select: { id: true, fullName: true, email: true },
+        },
+        post: {
+          select: {
+            id: true,
+            title: true,
+            images: {
+              select: {
+                id: true,
+                imageURL: true,
+              },
+            },
+          },
+        },
       },
-      orderBy: { createdAt: "desc" }, // Optional: Order by creation date (latest first)
     });
 
-    // Check if requests exist
     if (!requests || requests.length === 0) {
       return res
         .status(404)
