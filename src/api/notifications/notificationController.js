@@ -1,22 +1,19 @@
 import prisma from "../../config/prismaClient.js";
+
 export const getNotification = async (req, res) => {
   try {
     const { userId } = req.params;
+
     const notifications = await prisma.notification.findMany({
-      where: { userId: parseInt(userId) },
-      include: {
-        post: {
-          select: {
-            id: true,
-            title: true,
-            content: true,
-            createdAt: true,
-          },
-        },
+      where: {
+        userId: parseInt(userId),
+      },
+      orderBy: {
+        createdAt: "desc", // optional: shows newest first
       },
     });
 
-    if (!notifications) {
+    if (!notifications || notifications.length === 0) {
       return res.status(404).json({ error: "No notifications found" });
     }
 
