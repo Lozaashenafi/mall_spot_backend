@@ -9,6 +9,7 @@ import appAuthRoute from "../api/app/auth/appAuthRoute.js";
 import postRoute from "../api/post/postRoute.js";
 import requestRoute from "../api/app/request/requestRoute.js";
 import requestOwnerRoute from "../api/request/requestOwnerRoute.js";
+import notificationRoute from "../api/notifications/notificationRoute.js"; // Import the notification route
 const router = express.Router();
 
 // Auth routes
@@ -22,5 +23,6 @@ router.use("/payment", paymentRoute);
 router.use("/post", postRoute);
 router.use("/request", requestRoute);
 router.use("/owner/request", requestOwnerRoute);
+router.use("/notification", notificationRoute); // Add this line to include the notification route
 
 export default router;
