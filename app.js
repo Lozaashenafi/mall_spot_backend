@@ -17,6 +17,9 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "*", // Allow any origin for Socket.IO (adjust for security in production)
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
+    credentials: true,
   },
 });
 
@@ -35,7 +38,7 @@ app.get("/", (req, res) => {
 
 // Add your Socket.IO connection handling logic here
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+  // console.log("User connected:", socket.id);
 
   // Register user with their userId for private notifications
   socket.on("registerUser", (userId) => {
@@ -44,7 +47,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+    // console.log("User disconnected:", socket.id);
   });
 });
 

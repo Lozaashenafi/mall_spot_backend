@@ -134,3 +134,31 @@ export const getRequests = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+export const requestDetails = async (req, res) => {
+  try {
+    const { id } = req.params; // Get the request ID from the request parameters
+
+    const acceptedRequestDetails = await prisma.acceptedRequest.findUnique({
+      where: { requestId: parseInt(id) }, // Use dynamic ID from request parameters
+      include: {
+        post: true,
+        mall: {
+          include: {
+            agreements: true, // Include agreements related to the mall
+          },
+        },
+        request: true,
+      },
+    });
+
+    if (!acceptedRequestDetails) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+
+    res.status(200).json({ acceptedRequestDetails });
+  } catch (error) {
+    console.error("Error fetching request details:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

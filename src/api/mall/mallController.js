@@ -2,6 +2,10 @@ import multer from "multer";
 import mallSchema from "./mallSchema.js";
 import prisma from "../../config/prismaClient.js";
 import bcrypt from "bcryptjs";
+import nodemailer from "nodemailer";
+import { google } from "googleapis";
+
+const { OAuth2 } = google.auth;
 
 export const listPricePerCare = async (req, res) => {
   const { mallId } = req.query;
@@ -105,6 +109,7 @@ const uploadMallImages = multer({ storage }).fields([
   { name: "mainImage", maxCount: 1 },
   { name: "secondaryImage", maxCount: 1 },
   { name: "tertiaryImage", maxCount: 1 },
+  { name: "invoice", maxCount: 1 },
 ]);
 
 const uploadMallAgreement = multer({ storage }).single("agreementFile");
@@ -358,6 +363,133 @@ export const registerMall = async (req, res) => {
     });
   }
 };
+export const registerMallByItself = async (req, res) => {
+  try {
+    // Validate incoming request using Joi
+    const { error } = mallSchema.register.validate(req.body, {
+      abortEarly: false,
+    });
+
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No files uploaded",
+      });
+    }
+
+    const {
+      mallName,
+      latitude,
+      longitude,
+      address,
+      description,
+      totalFloors,
+      totalRooms,
+      userFullName, // User's full name
+      userEmail, // User's email
+      userPassword, // User's password
+    } = req.body;
+
+    // Convert numeric values
+    const parsedLatitude = parseFloat(latitude);
+    const parsedLongitude = parseFloat(longitude);
+    const parsedTotalFloors = parseInt(totalFloors);
+    const parsedTotalRooms = parseInt(totalRooms);
+
+    if (isNaN(parsedLatitude) || isNaN(parsedLongitude)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid latitude or longitude" });
+    }
+
+    if (isNaN(parsedTotalFloors) || isNaN(parsedTotalRooms)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid totalFloors or totalRooms" });
+    }
+
+    // Create Mall entry
+    const mall = await prisma.mall.create({
+      data: {
+        mallName,
+        latitude: parsedLatitude,
+        longitude: parsedLongitude,
+        address,
+        description,
+        totalFloors: parsedTotalFloors,
+        totalRooms: parsedTotalRooms,
+      },
+    });
+
+    // Save images if uploaded
+    const images = [];
+    if (req.files?.mainImage) {
+      images.push({
+        mallId: mall.id,
+        imageURL: `/uploads/${req.files.mainImage[0].filename}`,
+      });
+    }
+    if (req.files?.secondaryImage) {
+      images.push({
+        mallId: mall.id,
+        imageURL: `/uploads/${req.files.secondaryImage[0].filename}`,
+      });
+    }
+    if (req.files?.tertiaryImage) {
+      images.push({
+        mallId: mall.id,
+        imageURL: `/uploads/${req.files.tertiaryImage[0].filename}`,
+      });
+    }
+
+    if (images.length > 0) {
+      await prisma.mallImage.createMany({ data: images });
+    }
+
+    // Save invoice if uploaded
+    if (req.files?.invoice) {
+      const invoiceFile = req.files.invoice[0];
+      const invoiceURL = `/uploads/${invoiceFile.filename}`;
+
+      // Create an Invoice entry
+      await prisma.invoice.create({
+        data: {
+          mallId: mall.id,
+          invoiceURL,
+          flag: "false", // Set flag to false until verified by admin
+        },
+      });
+    }
+
+    // Create User (Mall Owner or User) and set status to INACTIVE
+    const user = await prisma.user.create({
+      data: {
+        fullName: userFullName,
+        email: userEmail,
+        username: userEmail,
+        password: userPassword, // Ensure password is hashed before saving
+        role: "MALL_OWNER",
+        status: "INACTIVE", // Set the user status to INACTIVE
+        mallId: mall.id, // Link the user to the created mall
+      },
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Mall and user registered successfully",
+      mall,
+      user,
+    });
+  } catch (error) {
+    console.error("Error in registerMall:", error); // Log error details
+    res.status(500).json({
+      success: false,
+      message: "Error registering mall",
+      error: error.message,
+    });
+  }
+};
+
 export const getMalls = async (req, res) => {
   try {
     const malls = await prisma.mall.findMany({
@@ -606,6 +738,131 @@ export const addPricePerCare = async (req, res) => {
   } catch (error) {
     console.error("Error adding price per care:", error);
     return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const getPendingMalls = async (req, res) => {
+  try {
+    // Fetch malls with invoices that are pending review (flag = 'false')
+    const malls = await prisma.mall.findMany({
+      where: {
+        invoice: {
+          some: {
+            flag: "false", // Only malls with pending invoices
+          },
+        },
+      },
+      include: {
+        invoice: true, // Include invoice details in the response
+        mallImage: true, // Include mall images if necessary
+      },
+    });
+
+    if (!malls.length) {
+      return res.status(404).json({
+        success: false,
+        message: "No malls pending review",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Pending malls fetched successfully",
+      malls,
+    });
+  } catch (error) {
+    console.error("Error fetching pending malls:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching pending malls",
+      error: error.message,
+    });
+  }
+};
+export const approveMall = async (req, res) => {
+  const { mallId } = req.body;
+
+  try {
+    const mall = await prisma.mall.findUnique({
+      where: { id: mallId },
+      include: {
+        invoice: true,
+      },
+    });
+
+    if (!mall) {
+      return res.status(404).json({
+        success: false,
+        message: "Mall not found",
+      });
+    }
+    // Find the user associated with this mall
+    const user = await prisma.user.findFirst({
+      where: { mallId: mallId },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "No user found for this mall",
+      });
+    }
+
+    // Update user status
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { status: "ACTIVE" },
+    });
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS, // App password if 2FA is enabled
+      },
+      secure: true, // Use SSL
+      port: 465,
+    });
+
+    const mailOptions = {
+      from: '"MallSpot Team" <MallSpot@gmail.com>',
+      to: user.email,
+      subject: "Your Mall Registration is Approved!",
+      html: `
+        <p>Dear ${user.username},</p>
+        <p>Congratulations! Your mall <strong>${mall.mallName}</strong> has been approved in <strong>MallSpot</strong>.</p>
+        <p>You can now log in to the system using your registered email and password.</p>
+        <p>Welcome aboard!</p>
+        <br />
+        <p>Best regards,</p>
+        <p><strong>MallSpot Team</strong></p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    // Update invoice flag if present
+    if (mall.invoice && mall.invoice.length > 0) {
+      await prisma.invoice.updateMany({
+        where: { mallId: mall.id },
+        data: {
+          flag: "true",
+        },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message:
+        "Mall approved, user status activated, invoice updated, and email sent",
+      mall,
+    });
+  } catch (error) {
+    console.error("Error in approveMall:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error approving mall",
+      error: error.message,
+    });
   }
 };
 

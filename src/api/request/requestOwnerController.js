@@ -38,7 +38,16 @@ export const getRequests = async (req, res) => {
 };
 export const acceptRequest = async (req, res) => {
   try {
-    const { id } = req.body;
+    const {
+      id,
+      visitDate,
+      paymentDate,
+      ownerName,
+      ownerPhone,
+      firstpayment,
+      paymentDuration,
+      note,
+    } = req.body;
     const parsedId = parseInt(id, 10);
 
     // Check if parsedId is a valid number
@@ -46,16 +55,32 @@ export const acceptRequest = async (req, res) => {
       return res.status(400).json({ message: "Invalid ID provided" });
     }
 
-    const { visitDate, paymentDate, ownerName, ownerPhone } = req.body;
-
-    // Fetch the request and related post
+    // Fetch the request and related post with the correct nested includes
     const request = await prismaClient.request.findUnique({
       where: { id: parsedId },
-      include: { post: { include: { user: true } } }, // Include post owner details
+      include: {
+        post: {
+          include: {
+            user: {
+              include: {
+                mall: true, // Including the mall related to the user
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!request) {
       return res.status(404).json({ message: "Request not found" });
+    }
+
+    // Ensure mall is available before proceeding
+    const mall = request.post.user.mall;
+    if (!mall) {
+      return res
+        .status(400)
+        .json({ message: "Mall information not available" });
     }
 
     // Update the selected request status to SELECTED
@@ -64,56 +89,34 @@ export const acceptRequest = async (req, res) => {
       data: { status: "SELECTED" },
     });
 
-    // Update all other requests for the same post to DECLINED
-    await prismaClient.request.updateMany({
-      where: {
+    // Create an entry in the acceptedUser table
+    const acceptedUser = await prismaClient.acceptedUser.create({
+      data: {
+        mallId: mall.id, // Use the mall from the user
+        requestId: parsedId,
+        userId: request.userId,
         postId: request.postId,
-        id: { not: parsedId },
+        visitDate: new Date(visitDate),
+        note: note,
+        paymentDateLimit: new Date(paymentDate),
+        ownerName: ownerName,
+        ownerPhone: ownerPhone,
+        firstpayment: firstpayment,
+        paymentDuration: paymentDuration,
       },
-      data: { status: "DECLINED" },
     });
 
-    // Create notification for accepted request
+    // Create a notification for the accepted request
     const acceptNotification = await prismaClient.notification.create({
       data: {
         userId: request.userId,
-        message: `Your request for post "${request.post.title}" has been accepted! 🎉\nYou can visit the place on ${visitDate} and must pay the first fee by ${paymentDate}.\nContact the owner: ${ownerName}, 📞 ${ownerPhone}`,
+        message: `Your request for post "${request.post.title}" has been accepted! 🎉\nYou can visit the place on ${visitDate} and must pay the first fee by ${paymentDate}.`,
         type: "REQUEST",
-        status: "UNREAD",
       },
     });
 
     // Emit notification via Socket.IO
     io.to(`user_${request.userId}`).emit("notification", acceptNotification);
-
-    // Get declined requests
-    const declinedRequests = await prismaClient.request.findMany({
-      where: {
-        postId: request.postId,
-        id: { not: parsedId },
-      },
-    });
-
-    // Create notifications for declined requests
-    const declineNotifications = declinedRequests.map((declined) => ({
-      userId: declined.userId,
-      message: `Your request for post "${request.post.title}" has been declined. ❌`,
-      type: "REQUEST",
-      status: "UNREAD",
-    }));
-
-    // Save notifications in DB
-    await prismaClient.notification.createMany({ data: declineNotifications });
-
-    // Emit notifications for declined users
-    declinedRequests.forEach((declined) => {
-      io.to(`user_${declined.userId}`).emit("notification", {
-        userId: declined.userId,
-        message: `Your request for post "${request.post.title}" has been declined. ❌`,
-        type: "REQUEST",
-        status: "UNREAD",
-      });
-    });
 
     return res.status(200).json({ message: "Request accepted successfully." });
   } catch (error) {
