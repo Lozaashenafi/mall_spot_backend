@@ -50,18 +50,21 @@ io.on("connection", (socket) => {
     console.log("User disconnected:", socket.id);
   });
 });
-setTimeout(() => {
-  io.to("user-3").emit("newRequest", {
-    id: 999,
-    message: "🔥 Manual test notification",
+
+app.get("/api/test-notify/:userId", (req, res) => {
+  const { userId } = req.params;
+  io.to(`user-${userId}`).emit("newRequest", {
+    id: Date.now(),
+    message: "🔔 New request triggered manually",
     user: {
-      userId: 3,
-      userName: "Test User",
+      userId,
+      userName: "Manual Trigger",
       userPhone: "0000000000",
     },
   });
-  console.log("Sent manual test emit to user-3");
-}, 8000);
+  console.log(`📢 Sent manual test to user-${userId}`);
+  res.send("Notification sent!");
+});
 
 // Start the server on the specified port
 const PORT = config.PORT || 5000;
