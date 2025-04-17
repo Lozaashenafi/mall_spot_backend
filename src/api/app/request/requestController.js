@@ -152,13 +152,13 @@ export const requestDetails = async (req, res) => {
   try {
     const { id } = req.params; // Get the request ID from the request parameters
 
-    const acceptedUserDetails = await prisma.acceptedUser.findUnique({
-      where: { requestId: parseInt(id) }, // Use dynamic ID from request parameters
+    const acceptedUserDetails = await prisma.acceptedUser.findFirst({
+      where: { requestId: parseInt(id) },
       include: {
         post: true,
         mall: {
           include: {
-            agreements: true, // Include agreements related to the mall
+            agreements: true,
           },
         },
         request: true,
