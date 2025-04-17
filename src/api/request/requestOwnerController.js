@@ -103,8 +103,8 @@ export const acceptRequest = async (req, res) => {
         paymentDateLimit: new Date(paymentDate),
         ownerName: ownerName,
         ownerPhone: ownerPhone,
-        firstpayment: firstpayment,
-        paymentDuration: paymentDuration,
+        firstpayment: parseInt(firstpayment, 10),
+        paymentDuration: parseInt(paymentDuration, 10),
       },
     });
 
