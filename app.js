@@ -38,7 +38,7 @@ app.get("/", (req, res) => {
 
 // Add your Socket.IO connection handling logic here
 io.on("connection", (socket) => {
-  // console.log("User connected:", socket.id);
+  console.log("User connected:", socket.id);
 
   // Register user with their userId for private notifications
   socket.on("registerUser", (userId) => {
@@ -47,9 +47,21 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    // console.log("User disconnected:", socket.id);
+    console.log("User disconnected:", socket.id);
   });
 });
+setTimeout(() => {
+  io.to("user-3").emit("newRequest", {
+    id: 999,
+    message: "🔥 Manual test notification",
+    user: {
+      userId: 3,
+      userName: "Test User",
+      userPhone: "0000000000",
+    },
+  });
+  console.log("Sent manual test emit to user-3");
+}, 8000);
 
 // Start the server on the specified port
 const PORT = config.PORT || 5000;
