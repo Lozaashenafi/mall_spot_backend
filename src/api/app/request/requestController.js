@@ -30,7 +30,6 @@ export const uploadImage = (req, res) => {
       .json({ imageUrl: `/uploads/user_ids/${req.file.filename}` });
   });
 };
-
 export const addRequest = async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
@@ -52,6 +51,20 @@ export const addRequest = async (req, res) => {
 
       if (!userId || !postId || !userName || !userPhone || !userIdUrl) {
         return res.status(400).json({ error: "All fields are required" });
+      }
+
+      // Check if the user has already requested on the same post
+      const existingRequest = await prisma.request.findFirst({
+        where: {
+          userId: parseInt(userId),
+          postId: parseInt(postId),
+        },
+      });
+
+      if (existingRequest) {
+        return res.status(400).json({
+          error: "You have already sent a request for this post.",
+        });
       }
 
       // Get the post owner's userId
