@@ -45,15 +45,8 @@ export const addBid = async (req, res) => {
         ])
       );
 
-      const {
-        userId,
-        postId,
-        userName,
-        userPhone,
-        note,
-        bidAmount,
-        depositAmount,
-      } = cleanBody;
+      const { userId, postId, userName, userPhone, note, bidAmount } =
+        cleanBody;
 
       const userIdUrl = req.file
         ? `/uploads/user_ids/${req.file.filename}`
@@ -65,23 +58,30 @@ export const addBid = async (req, res) => {
         !userName ||
         !userPhone ||
         !userIdUrl ||
-        !bidAmount ||
-        !depositAmount
+        !bidAmount
       ) {
         return res
           .status(400)
-          .json({ error: "All fields are required, including depositAmount" });
+          .json({ error: "All fields are required, including bidAmount" });
       }
 
+      // Fetch post details to get the bidDeposit
       const post = await prisma.post.findUnique({
         where: { id: parseInt(postId) },
-        select: { userId: true },
+        select: { userId: true, bidDeposit: true },
       });
 
       if (!post) {
         return res.status(404).json({ error: "Post not found" });
       }
 
+      if (!post.bidDeposit) {
+        return res
+          .status(400)
+          .json({ error: "Post does not have a deposit amount" });
+      }
+
+      // Create the bid
       const bid = await prisma.bid.create({
         data: {
           userId: parseInt(userId),
@@ -94,12 +94,12 @@ export const addBid = async (req, res) => {
         },
       });
 
-      // Create a deposit record for the bid
+      // Create the deposit record using the bidDeposit from the Post
       await prisma.deposit.create({
         data: {
           bidId: bid.id,
           userId: parseInt(userId),
-          amount: parseFloat(depositAmount),
+          amount: post.bidDeposit, // Use the bidDeposit from the Post
         },
       });
 
@@ -126,6 +126,7 @@ export const addBid = async (req, res) => {
     }
   });
 };
+
 export const getBids = async (req, res) => {
   try {
     const { userId } = req.params;
