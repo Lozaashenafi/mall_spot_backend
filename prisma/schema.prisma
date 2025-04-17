@@ -173,7 +173,6 @@ model Request {
   userIdUrl  String
   note       String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
   status    RequestStatus @default(PENDING)
   user      User     @relation(fields: [userId], references: [id])
   post      Post     @relation(fields: [postId], references: [id])
