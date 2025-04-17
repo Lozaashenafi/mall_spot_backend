@@ -81,6 +81,20 @@ export const addBid = async (req, res) => {
           .json({ error: "Post does not have a deposit amount" });
       }
 
+      // Check if the user has already placed a bid on the post
+      const existingBid = await prisma.bid.findFirst({
+        where: {
+          userId: parseInt(userId),
+          postId: parseInt(postId),
+        },
+      });
+
+      if (existingBid) {
+        return res
+          .status(400)
+          .json({ error: "You have already placed a bid on this post" });
+      }
+
       // Create the bid
       const bid = await prisma.bid.create({
         data: {
