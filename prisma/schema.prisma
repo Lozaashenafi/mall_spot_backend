@@ -22,6 +22,11 @@ SELECTED
 DECLINED 
 PENDING
 }
+enum BidStatus {
+  WINNER
+  DECLINED 
+  PENDING
+}
 
 enum NotificationStatus {
   UNREAD
@@ -74,6 +79,7 @@ model User {
   
   @@index([email]) 
   @@index([username]) 
+  acceptedUser AcceptedUser?
 }
 
 model PricePerCare{
@@ -104,6 +110,18 @@ model Mall {
   user        User[]
   pricePerCare PricePerCare[]
   mallImage   MallImage[]
+  invoice   Invoice[]
+  Rent Rent[]
+  acceptedUser AcceptedUser[]
+}
+model Invoice {
+  id        Int      @id @default(autoincrement())
+  mallId    Int
+  invoiceURL String
+  flag       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  mall      Mall     @relation(fields: [mallId], references: [id])
 }
 
 model MallImage {
@@ -132,6 +150,7 @@ model Post {
   bids        Bid[]
   riquest        Request[]
   images      PostImage[]
+  acceptedUser AcceptedUser? // One post can have one accepted request
 
   @@index([title]) // Add index on the title field
   @@index([userId]) // Add index on the userId field
@@ -153,12 +172,14 @@ model Bid {
   userName   String
   userPhone   String 
   userIdUrl  String
+  status    BidStatus @default(PENDING)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
   post      Post     @relation(fields: [postId], references: [id])
   deposits  Deposit[] // One bid can have many deposits
   winner    Winner?   // One bid can have one winner
+  acceptedUser AcceptedUser? // One bid can have one accepted request
 
   @@index([userId]) // Add index on the userId field
   @@index([postId]) // Add index on the postId field
@@ -176,6 +197,38 @@ model Request {
   status    RequestStatus @default(PENDING)
   user      User     @relation(fields: [userId], references: [id])
   post      Post     @relation(fields: [postId], references: [id])
+  acceptedUser AcceptedUser? // One request can have one accepted request
+}
+model AcceptedUser {
+  id        Int      @id @default(autoincrement())
+  mallId    Int
+  requestId Int? @unique
+  bidId    Int? @unique
+  userId    Int @unique
+  postId    Int @unique
+  visitDate DateTime
+  note      String
+  paymentDateLimit DateTime
+  ownerName String
+  ownerPhone String
+  firstpayment  Int
+  paymentDuration Int
+  createdAt DateTime @default(now())
+  request   Request?  @relation(fields: [requestId], references: [id])
+  bid       Bid?     @relation(fields: [bidId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id])
+  mall      Mall     @relation(fields: [mallId], references: [id])
+  Firstpayment Firstpayment[]
+}
+model Firstpayment {
+  id        Int      @id @default(autoincrement())
+  acceptedUserId Int
+  amount      Float
+  paymentDate DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  acceptedUser AcceptedUser @relation(fields: [acceptedUserId], references: [id])
 }
 
 model Deposit {
@@ -187,8 +240,16 @@ model Deposit {
   updatedAt DateTime @updatedAt
   bid       Bid      @relation(fields: [bidId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
+  refunds   Refund[] 
 }
-
+model Refund {
+  id        Int      @id @default(autoincrement())
+  depositId   Int @unique
+  amount    Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deposit      Deposit     @relation(fields: [depositId], references: [id])
+}
 model Winner {
   id            Int      @id @default(autoincrement())
   bidId         Int      @unique
@@ -256,13 +317,17 @@ model Rent {
   id        Int      @id @default(autoincrement())
   userId    Int
   roomId    Int     @unique
+  mallId    Int
   amount    Float
   PaymentDuration   Int
+  agreementFile String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
   room      Rooms    @relation(fields: [roomId], references: [id])
+  mall      Mall     @relation(fields: [mallId], references: [id])
   payments  Payment[] // One rent can have many payments
+  rentInfo RentInfo?
 }
 
 model Rooms {
@@ -292,4 +357,14 @@ model Category {
   id           Int     @id @default(autoincrement())
   categoryName String
   rooms        Rooms[] // One category can have many rooms
+}
+model RentInfo {
+  id           Int     @id @default(autoincrement())
+  rentId       Int     @unique
+  rent        Rent     @relation(fields: [rentId], references: [id])
+  businessName String
+  bannerUrl    String?
+  discription  String?
+  workingOn    String
+  createdAt    DateTime @default(now())
 }

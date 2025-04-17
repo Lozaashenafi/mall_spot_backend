@@ -1,4 +1,4 @@
-import prismaClient from "../..//config/prismaClient.js";
+import prismaClient from "../../config/prismaClient.js";
 
 import { io } from "../../../app.js";
 
