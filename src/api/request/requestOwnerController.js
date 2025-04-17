@@ -76,12 +76,14 @@ export const acceptRequest = async (req, res) => {
     }
 
     // Ensure mall is available before proceeding
-    const mall = request.post.user.mall;
-    if (!mall) {
+    const user = request.post.user;
+    if (!user.mall) {
       return res
         .status(400)
-        .json({ message: "Mall information not available" });
+        .json({ message: "User does not have an associated mall" });
     }
+
+    const mall = user.mall;
 
     // Update the selected request status to SELECTED
     await prismaClient.request.update({
