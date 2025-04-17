@@ -152,7 +152,7 @@ export const requestDetails = async (req, res) => {
   try {
     const { id } = req.params; // Get the request ID from the request parameters
 
-    const acceptedRequestDetails = await prisma.acceptedRequest.findUnique({
+    const acceptedUserDetails = await prisma.acceptedUser.findUnique({
       where: { requestId: parseInt(id) }, // Use dynamic ID from request parameters
       include: {
         post: true,
@@ -165,11 +165,11 @@ export const requestDetails = async (req, res) => {
       },
     });
 
-    if (!acceptedRequestDetails) {
+    if (!acceptedUserDetails) {
       return res.status(404).json({ error: "Request not found" });
     }
 
-    res.status(200).json({ acceptedRequestDetails });
+    res.status(200).json({ acceptedUserDetails });
   } catch (error) {
     console.error("Error fetching request details:", error);
     res.status(500).json({ error: "Internal server error" });
