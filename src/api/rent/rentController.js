@@ -188,6 +188,15 @@ export const getRentId = async (req, res) => {
   try {
     const rents = await prisma.rent.findMany({
       where: { userId: parseInt(userId) },
+      include: {
+        room: true,
+        mall: {
+          include: {
+            mallImage: true,
+          },
+        },
+        rentInfo: true,
+      },
     });
 
     if (!rents || rents.length === 0) {
