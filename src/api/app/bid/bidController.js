@@ -116,7 +116,6 @@ export const addBid = async (req, res) => {
           amount: post.bidDeposit, // Use the bidDeposit from the Post
         },
       });
-
       // Emit notification to the post owner
       io.to(`user-${post.userId}`).emit("newBid", {
         id: bid.id,
@@ -127,7 +126,6 @@ export const addBid = async (req, res) => {
           userPhone,
         },
       });
-
       res
         .status(201)
         .json({ message: "Bid and deposit recorded successfully", bid });
