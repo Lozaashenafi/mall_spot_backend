@@ -182,3 +182,21 @@ export const updateRentInfo = async (req, res) => {
     res.status(500).json({ message: "Failed to update RentInfo" });
   }
 };
+export const getRentId = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const rents = await prisma.rent.findMany({
+      where: { userId: parseInt(userId) },
+    });
+
+    if (!rents || rents.length === 0) {
+      return res.status(404).json({ message: "No rents found for this user" });
+    }
+
+    res.json(rents);
+  } catch (error) {
+    console.error("Error fetching rents:", error);
+    res.status(500).json({ message: "Failed to fetch rents" });
+  }
+};
