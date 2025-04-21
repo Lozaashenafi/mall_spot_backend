@@ -134,7 +134,6 @@ export const getMyPosts = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch user posts" });
   }
 };
-
 export const postDetail = async (req, res) => {
   try {
     const { id } = req.params;
@@ -142,16 +141,16 @@ export const postDetail = async (req, res) => {
       where: { id: parseInt(id) },
       include: {
         user: true,
-        mall: true, // This will fetch the associated mall for the post
-        room,
-        include: {
-          category: true, // Fetch category information for the room
-        }, // Fetch room information for the post
-        bids: true, // Fetch bids associated with the post
+        mall: true,
+        room: {
+          include: {
+            category: true, // This should be nested inside room.include
+          },
+        },
+        bids: true,
         images: {
-          // Fetch images associated with the post
           select: {
-            imageURL: true, // Adjust based on your field name in the PostImage model
+            imageURL: true,
           },
         },
       },
@@ -161,7 +160,7 @@ export const postDetail = async (req, res) => {
       return res.status(404).json({ error: "Post not found" });
     }
 
-    res.json(post); // Returning the complete post data including mall, room, and images
+    res.json(post);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to fetch post" });
