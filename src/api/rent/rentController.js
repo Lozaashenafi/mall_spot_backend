@@ -1,21 +1,14 @@
 import prisma from "../../config/prismaClient.js";
 import multer from "multer";
 import path from "path";
-
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadPath = "uploads/banner/";
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-    cb(null, uploadPath);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
+  destination: (req, file, cb) => cb(null, "uploads/banner"),
+  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
 });
 
-const upload = multer({ storage }).single("file");
+const upload = multer({ storage });
+
+router.post("/rent/rentinfo", upload.single("file"), addRentInfo);
 
 export const uploadImage = (req, res) => {
   upload(req, res, (err) => {
@@ -149,7 +142,7 @@ export const getRentInfo = async (req, res) => {
 
 export const updateRentInfo = async (req, res) => {
   const { rentId } = req.params;
-  const { businessName, discription, workingOn } = req.body;
+  const { businessName, description, workingOn } = req.body;
   const file = req.file;
 
   try {
@@ -170,7 +163,7 @@ export const updateRentInfo = async (req, res) => {
       where: { rentId: parseInt(rentId) },
       data: {
         businessName,
-        discription,
+        description,
         workingOn,
         bannerUrl,
       },
