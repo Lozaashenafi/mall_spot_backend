@@ -48,19 +48,17 @@ export const pay = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 export const getPaymentsByUserId = async (req, res) => {
-  const { userId } = req.params; // Extract userId from params
+  const { userId } = req.params;
 
   try {
-    // Fetch the rents associated with the user
     const rents = await prisma.rent.findMany({
       where: {
-        userId: parseInt(userId), // Ensure userId is an integer
+        userId: parseInt(userId),
       },
       include: {
-        payments: true, // Include payments related to the rent
-        room: true, // Optionally, include room info if you need it
+        room: true, // Include room details
+        payments: true, // Include payments
       },
     });
 
@@ -68,13 +66,27 @@ export const getPaymentsByUserId = async (req, res) => {
       return res.status(404).json({ message: "No rents found for this user" });
     }
 
-    // Extract payment details from rents
-    const payments = rents.flatMap((rent) => rent.payments); // Flatten payments across rents
+    // Flatten the structure into a combined response
+    const detailedPayments = rents.flatMap((rent) =>
+      rent.payments.map((payment) => ({
+        payment,
+        rent: {
+          id: rent.id,
+          amount: rent.amount,
+          agreementFile: rent.agreementFile,
+          createdAt: rent.createdAt,
+          updatedAt: rent.updatedAt,
+          mallId: rent.mallId,
+          paymentDuration: rent.PaymentDuration,
+        },
+        room: rent.room,
+      }))
+    );
 
-    res.status(200).json(payments); // Return the payments list
+    res.status(200).json(detailedPayments);
   } catch (error) {
     console.error("Error fetching payments:", error);
-    res.status(500).json({ message: "Failed to fetch payments" });
+    res.status(500).json({ message: "Failed to fetch payment details" });
   }
 };
 export const checkRentPayments = async (req, res) => {
