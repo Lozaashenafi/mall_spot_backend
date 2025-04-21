@@ -1,7 +1,7 @@
 import prisma from "../../config/prismaClient.js";
 import fs from "fs";
 import path from "path";
-import { addMonths, differenceInDays } from "date-fns";
+import { addMonths, differenceInDays, isBefore } from "date-fns";
 
 import { io } from "../../../app.js";
 const sendNotification = async (userId, message, type) => {
@@ -376,6 +376,49 @@ export const getFirstPayments = async (req, res) => {
     res.json(firstPayments);
   } catch (error) {
     console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const nextPaymentDays = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const rent = await prisma.rent.findFirst({
+      where: { userId: parseInt(userId) },
+      include: { payments: true },
+    });
+
+    if (!rent) {
+      return res.status(404).json({ message: "Rent not found" });
+    }
+
+    // Get the latest payment by sorting payments
+    const latestPayment = rent.payments.sort(
+      (a, b) => new Date(b.paymentDate) - new Date(a.paymentDate)
+    )[0];
+
+    const baseDate = latestPayment
+      ? new Date(latestPayment.paymentDate)
+      : new Date(rent.createdAt);
+
+    const nextPaymentDate = addMonths(baseDate, rent.PaymentDuration);
+    const daysLeft = differenceInDays(nextPaymentDate, new Date());
+
+    let message;
+    if (daysLeft > 0) {
+      message = `${daysLeft} day(s) left until next payment`;
+    } else {
+      message = `Payment is overdue by ${Math.abs(daysLeft)} day(s)`;
+    }
+
+    res.status(200).json({
+      message,
+      nextPaymentDate,
+      lastPaymentDate: latestPayment?.paymentDate || rent.createdAt,
+    });
+  } catch (error) {
+    console.error("Error fetching next payment days:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
