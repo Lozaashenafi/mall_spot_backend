@@ -143,7 +143,10 @@ export const postDetail = async (req, res) => {
       include: {
         user: true,
         mall: true, // This will fetch the associated mall for the post
-        room: true, // Fetch room information for the post
+        room,
+        include: {
+          category: true, // Fetch category information for the room
+        }, // Fetch room information for the post
         bids: true, // Fetch bids associated with the post
         images: {
           // Fetch images associated with the post
