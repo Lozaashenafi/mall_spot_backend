@@ -95,7 +95,7 @@ export const getRents = async (req, res) => {
   }
 };
 export const addRentInfo = async (req, res) => {
-  const { rentId, businessName, discription, workingOn } = req.body;
+  const { rentId, businessName, description, workingOn } = req.body;
   const file = req.file; // This will be undefined if no file is uploaded
 
   try {
@@ -116,7 +116,7 @@ export const addRentInfo = async (req, res) => {
         rentId: parseInt(rentId),
         businessName,
         bannerUrl,
-        discription,
+        description,
         workingOn,
       },
     });

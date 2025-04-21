@@ -364,7 +364,7 @@ model RentInfo {
   rent        Rent     @relation(fields: [rentId], references: [id])
   businessName String
   bannerUrl    String?
-  discription  String?
+  description   String?
   workingOn    String
   createdAt    DateTime @default(now())
 }
