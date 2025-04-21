@@ -19,14 +19,19 @@ const sendNotification = async (userId, message, type) => {
     throw new Error("Failed to send notification."); // Throw a custom error with a message
   }
 };
-
 export const pay = async (req, res) => {
   try {
-    const { rentId, amount, paymentDate } = req.body;
+    let { rentId, amount, paymentDate } = req.body;
 
     // Validate input
     if (!rentId || !amount || !paymentDate) {
       return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Convert rentId to an integer
+    rentId = parseInt(rentId, 10);
+    if (isNaN(rentId)) {
+      return res.status(400).json({ message: "rentId must be a valid number" });
     }
 
     const payment = await prisma.payment.create({
@@ -43,6 +48,7 @@ export const pay = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 export const getPaymentsByUserId = async (req, res) => {
   const { userId } = req.params; // Extract userId from params
 
