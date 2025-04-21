@@ -866,6 +866,32 @@ export const approveMall = async (req, res) => {
   }
 };
 
+export const getMallRents = async (req, res) => {
+  const { mallId } = req.params;
+
+  try {
+    const rents = await prisma.rent.findMany({
+      where: { mallId: parseInt(mallId) },
+      include: {
+        user: true, // Include user details
+        room: true, // Include room details
+        rentInfo: true, // Include rent information
+      },
+    });
+
+    if (!rents || rents.length === 0) {
+      return res.status(404).json({ message: "No rents found for this mall." });
+    }
+
+    res.status(200).json({
+      success: true,
+      rents,
+    });
+  } catch (error) {
+    console.error("Error fetching rents:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 // Middleware for image upload (use .fields() to handle multiple fields)
 export const uploadMallImagesMiddleware = uploadMallImages;
 export const uploadAgreement = uploadMallAgreement;
