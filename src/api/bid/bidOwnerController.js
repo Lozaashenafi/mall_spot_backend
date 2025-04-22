@@ -1,4 +1,4 @@
-import prisma from "../..//config/prismaClient.js";
+import prisma from "../../config/prismaClient.js";
 import { io } from "../../../app.js";
 export const getBids = async (req, res) => {
   try {
