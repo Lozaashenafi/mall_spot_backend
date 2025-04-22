@@ -1,4 +1,5 @@
 import prisma from "../../config/prismaClient.js";
+import { startOfYear, subYears } from "date-fns";
 
 export const getDashboardData = async (req, res) => {
   const mallId = parseInt(req.params.mallId);
