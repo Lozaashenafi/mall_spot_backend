@@ -93,11 +93,38 @@ export const getDashboardData = async (req, res) => {
         ? 100
         : ((currentRevenue - previousRevenue) / previousRevenue) * 100;
 
+    // Get room status counts
+    const [totalRooms, occupiedRooms] = await Promise.all([
+      prisma.rooms.count({
+        where: {
+          floor: {
+            mallId,
+          },
+        },
+      }),
+      prisma.rooms.count({
+        where: {
+          status: "OCCUPIED",
+          floor: {
+            mallId,
+          },
+        },
+      }),
+    ]);
+
+    const availableRooms = totalRooms - occupiedRooms;
+    const occupancyPercent =
+      totalRooms > 0 ? (occupiedRooms / totalRooms) * 100 : 0;
+    const availabilityPercent = 100 - occupancyPercent;
+
     return res.status(200).json({
       postCount,
       tenantCount,
       totalRevenue,
       growthRate: parseFloat(growthRate.toFixed(2)),
+      occupancyPercent,
+      availabilityPercent,
+      totalRooms,
     });
   } catch (error) {
     console.error("Dashboard data error:", error);
