@@ -177,10 +177,10 @@ model Bid {
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
   post      Post     @relation(fields: [postId], references: [id])
-  deposits  Deposit[] // One bid can have many deposits
   winner    Winner?   // One bid can have one winner
   acceptedUser AcceptedUser? // One bid can have one accepted request
-
+  deposit   Deposit  @relation("BidDeposit", fields: [depositId], references: [id])
+  depositId Int      @unique
   @@index([userId]) // Add index on the userId field
   @@index([postId]) // Add index on the postId field
 }
@@ -233,12 +233,11 @@ model Firstpayment {
 
 model Deposit {
   id        Int      @id @default(autoincrement())
-  bidId     Int
   userId    Int      // Deposit is made by a user
   amount    Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  bid       Bid      @relation(fields: [bidId], references: [id])
+  bid       Bid?     @relation("BidDeposit")
   user      User     @relation(fields: [userId], references: [id])
   refunds   Refund[] 
 }
