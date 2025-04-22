@@ -150,8 +150,8 @@ export const getBids = async (req, res) => {
     const bids = await prisma.bid.findMany({
       where: { userId: parseInt(userId) },
       include: {
-        deposit: true,
-        post: true, // Optional: include post info related to the bid
+        deposits: true, // <-- FIXED
+        post: true,
       },
     });
 
