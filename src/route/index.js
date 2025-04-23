@@ -13,6 +13,8 @@ import bidRoute from "../api/app/bid/bidRoute.js";
 import bidOwnerRoute from "../api/bid/bidOwnerRoute.js";
 import notificationRoute from "../api/notifications/notificationRoute.js";
 import dashboardRoute from "../api/dashboard/dashboardRoute.js";
+import profileRoute from "../api/app/profile/profileRoute.js";
+import { profile } from "console";
 const router = express.Router();
 
 // Auth routes
@@ -30,5 +32,6 @@ router.use("/bid", bidRoute);
 router.use("/owner/bid", bidOwnerRoute);
 router.use("/notification", notificationRoute);
 router.use("/dashboard", dashboardRoute);
+router.use("/profile", profileRoute);
 
 export default router;
