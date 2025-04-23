@@ -7,10 +7,9 @@ export const getBids = async (req, res) => {
     if (!postId) {
       return res.status(400).json({ error: "Post ID is required" });
     }
-
     const bids = await prisma.bid.findMany({
       where: {
-        postId: 2,
+        postId: Number(postId), // Don't forget to parse this if it's from req.params
       },
       orderBy: {
         bidAmount: "desc",
@@ -23,7 +22,7 @@ export const getBids = async (req, res) => {
             phoneNumber: true,
           },
         },
-        deposits: true, // ✅ Corrected from `deposit` to `deposits`
+        deposit: true,
       },
     });
 

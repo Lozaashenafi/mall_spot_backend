@@ -65,7 +65,6 @@ export const addBid = async (req, res) => {
           .json({ error: "All fields are required, including bidAmount" });
       }
 
-      // Fetch post details to get the bidDeposit
       const post = await prisma.post.findUnique({
         where: { id: parseInt(postId) },
         select: { userId: true, bidDeposit: true },
@@ -81,7 +80,6 @@ export const addBid = async (req, res) => {
           .json({ error: "Post does not have a deposit amount" });
       }
 
-      // Check if the user has already placed a bid on the post
       const existingBid = await prisma.bid.findFirst({
         where: {
           userId: parseInt(userId),
@@ -95,7 +93,15 @@ export const addBid = async (req, res) => {
           .json({ error: "You have already placed a bid on this post" });
       }
 
-      // Create the bid
+      // Create deposit record first
+      const deposit = await prisma.deposit.create({
+        data: {
+          userId: parseInt(userId),
+          amount: post.bidDeposit,
+        },
+      });
+
+      // Now create the bid with the depositId
       const bid = await prisma.bid.create({
         data: {
           userId: parseInt(userId),
@@ -105,18 +111,11 @@ export const addBid = async (req, res) => {
           userIdUrl,
           bidAmount: parseFloat(bidAmount),
           note,
+          depositId: deposit.id,
         },
       });
 
-      // Create the deposit record using the bidDeposit from the Post
-      await prisma.deposit.create({
-        data: {
-          bidId: bid.id,
-          userId: parseInt(userId),
-          amount: post.bidDeposit, // Use the bidDeposit from the Post
-        },
-      });
-      // Emit notification to the post owner
+      // Emit real-time notification
       io.to(`user-${post.userId}`).emit("newBid", {
         id: bid.id,
         message: `New bid from ${userName}.`,
@@ -126,9 +125,11 @@ export const addBid = async (req, res) => {
           userPhone,
         },
       });
-      res
-        .status(201)
-        .json({ message: "Bid and deposit recorded successfully", bid });
+
+      res.status(201).json({
+        message: "Bid and deposit recorded successfully",
+        bid,
+      });
     } catch (error) {
       console.error("Error placing bid:", error);
       res.status(500).json({
@@ -138,7 +139,6 @@ export const addBid = async (req, res) => {
     }
   });
 };
-
 export const getBids = async (req, res) => {
   try {
     const { userId } = req.params;
