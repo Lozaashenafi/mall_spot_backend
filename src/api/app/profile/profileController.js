@@ -2,7 +2,7 @@ import prisma from "../../../config/prismaClient.js";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { io } from "../../../../app.js";
+import bcrypt from "bcrypt";
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -85,6 +85,41 @@ export const updateProfile = async (req, res) => {
     res.status(200).json(profile);
   } catch (error) {
     console.error("Error saving profile:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const changePassword = async (req, res) => {
+  const { id } = req.params; // User ID
+  const { currentPassword, newPassword } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
+    if (!isPasswordCorrect) {
+      return res.status(401).json({ message: "Current password is incorrect" });
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: Number(id) },
+      data: { password: hashedNewPassword },
+    });
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    console.error("Error changing password:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
