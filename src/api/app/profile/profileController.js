@@ -43,7 +43,7 @@ export const getProfile = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   const { id } = req.params;
-  const { bio } = req.body;
+  const { fullName, email, phoneNumber, bio } = req.body;
 
   const profileImage = req.file
     ? `/uploads/profile/${req.file.filename}`
@@ -58,6 +58,17 @@ export const updateProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Update User base info
+    await prisma.user.update({
+      where: { id: Number(id) },
+      data: {
+        fullName,
+        email,
+        phoneNumber,
+      },
+    });
+
+    // Handle profile (upsert-like logic)
     const existingProfile = await prisma.profile.findUnique({
       where: { userId: Number(id) },
     });
@@ -69,7 +80,7 @@ export const updateProfile = async (req, res) => {
         where: { userId: Number(id) },
         data: {
           bio,
-          ...(profileImage && { profileImage }), // update only if image exists
+          ...(profileImage && { profileImage }),
         },
       });
     } else {
@@ -82,9 +93,9 @@ export const updateProfile = async (req, res) => {
       });
     }
 
-    res.status(200).json(profile);
+    res.status(200).json({ message: "Profile updated successfully", profile });
   } catch (error) {
-    console.error("Error saving profile:", error);
+    console.error("Error updating profile:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
