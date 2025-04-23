@@ -1,5 +1,9 @@
 import express from "express";
-import { changePassword, getProfile, updateProfile } from "./profileController";
+import {
+  changePassword,
+  getProfile,
+  updateProfile,
+} from "./profileController.js";
 
 const router = express.Router();
 
