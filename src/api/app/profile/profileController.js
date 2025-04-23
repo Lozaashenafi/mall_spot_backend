@@ -101,12 +101,12 @@ export const updateProfile = async (req, res) => {
 };
 
 export const changePassword = async (req, res) => {
-  const { id } = req.params; // User ID
+  const { userId } = req.params; // User ID
   const { currentPassword, newPassword } = req.body;
 
   try {
     const user = await prisma.user.findUnique({
-      where: { id: Number(id) },
+      where: { id: Number(userId) },
     });
 
     if (!user) {
@@ -124,7 +124,7 @@ export const changePassword = async (req, res) => {
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
     await prisma.user.update({
-      where: { id: Number(id) },
+      where: { id: Number(userId) },
       data: { password: hashedNewPassword },
     });
 
