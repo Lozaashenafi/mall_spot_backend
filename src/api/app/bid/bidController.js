@@ -161,3 +161,30 @@ export const getBids = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch bids" });
   }
 };
+export const bidDetails = async (req, res) => {
+  try {
+    const { bidId } = req.params;
+
+    const acceptedUserDetails = await prisma.acceptedUser.findFirst({
+      where: { bidId: parseInt(bidId) },
+      include: {
+        post: true,
+        mall: {
+          include: {
+            agreements: true,
+          },
+        },
+        bid: true,
+      },
+    });
+
+    if (!acceptedUserDetails) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+
+    res.status(200).json({ acceptedUserDetails });
+  } catch (error) {
+    console.error("Error fetching request details:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
