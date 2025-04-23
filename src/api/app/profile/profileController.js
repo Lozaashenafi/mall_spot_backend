@@ -2,7 +2,7 @@ import prisma from "../../../config/prismaClient.js";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
