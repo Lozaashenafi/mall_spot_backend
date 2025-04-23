@@ -70,8 +70,8 @@ export const getMallOwners = async (req, res) => {
         fullName: true,
         email: true,
         phoneNumber: true,
-        Mall: {
-          // Access the related Mall
+        mall: {
+          // ✅ Corrected this line from 'Mall' to 'mall'
           select: {
             mallName: true, // Include mall name
           },
@@ -91,7 +91,7 @@ export const getMallOwners = async (req, res) => {
         fullName: owner.fullName,
         email: owner.email,
         phoneNumber: owner.phoneNumber,
-        mallName: owner.Mall ? owner.Mall.mallName : "No mall associated", // Handle null if no mall
+        mallName: owner.mall ? owner.mall.mallName : "No mall associated", // Handle null if no mall
       })),
     });
   } catch (error) {
