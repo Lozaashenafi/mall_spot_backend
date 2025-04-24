@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage }).single("file");
+export const upload = multer({ storage }).single("profileImage");
 
 export const getProfile = async (req, res) => {
   const { id } = req.params;

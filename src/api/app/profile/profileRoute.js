@@ -3,13 +3,14 @@ import {
   changePassword,
   getProfile,
   updateProfile,
+  upload,
 } from "./profileController.js";
 
 const router = express.Router();
 
 // Register route
 router.get("/:id", getProfile);
-router.put("/update/:id", updateProfile); // Assuming you have an updateProfile function in your controller
+router.put("/update/:id", upload, updateProfile); // Assuming you have an updateProfile function in your controller
 router.post("/:userId/change-password", changePassword);
 
 export default router;

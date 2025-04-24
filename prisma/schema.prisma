@@ -113,6 +113,7 @@ model Mall {
   invoice   Invoice[]
   Rent Rent[]
   acceptedUser AcceptedUser[]
+  subscription subscription[]
 }
 model Invoice {
   id        Int      @id @default(autoincrement())
@@ -249,6 +250,7 @@ model Refund {
   updatedAt DateTime @updatedAt
   deposit      Deposit     @relation(fields: [depositId], references: [id])
 }
+
 model Winner {
   id            Int      @id @default(autoincrement())
   bidId         Int      @unique
@@ -366,4 +368,16 @@ model RentInfo {
   description   String?
   workingOn    String
   createdAt    DateTime @default(now())
+}
+model subscription {
+  id          Int      @id @default(autoincrement())
+  mallId      Int
+  startDate   DateTime
+  endDate     DateTime
+  status      String
+  paymentMethod String
+  amount      Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  mall        Mall     @relation(fields: [mallId], references: [id])
 }
