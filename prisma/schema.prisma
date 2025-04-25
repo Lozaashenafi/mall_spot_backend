@@ -374,7 +374,6 @@ model subscription {
   mallId      Int
   startDate   DateTime
   endDate     DateTime
-  status      String
   paymentMethod String
   amount      Float
   createdAt   DateTime @default(now())
