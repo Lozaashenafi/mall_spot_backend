@@ -374,8 +374,7 @@ model subscription {
   mallId      Int
   startDate   DateTime
   endDate     DateTime
-  paymentMethod String
-  amount      Float
+  price      Float
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   mall        Mall     @relation(fields: [mallId], references: [id])
