@@ -1,10 +1,10 @@
 import prisma from "../../config/prismaClient.js";
 
+// Add Subscription
 export const addSubscription = async (req, res) => {
-  const { mallId, price, endDate, startDate } = req.body; // Extract data from request body
+  const { mallId, price, endDate, startDate } = req.body;
 
   try {
-    // Create a new subscription in the database
     const subscription = await prisma.subscription.create({
       data: {
         mallId,
@@ -14,44 +14,69 @@ export const addSubscription = async (req, res) => {
       },
     });
 
-    res.status(201).json(subscription);
+    res.status(201).json({
+      status: "success",
+      message: "Subscription created successfully.",
+      data: subscription,
+    });
   } catch (error) {
     console.error("Error creating subscription:", error);
-    res.status(500).json({ message: "Failed to create subscription." });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to create subscription.",
+    });
   }
 };
 
+// Get Subscription by mallId
 export const getSubscription = async (req, res) => {
   const { mallId } = req.params;
+
   try {
-    // Fetch the subscription for the given mallId
     const subscription = await prisma.subscription.findUnique({
-      where: { mallId },
+      where: { mallId: Number(mallId) },
     });
 
     if (!subscription) {
-      return res.status(404).json({ message: "Subscription not found." });
+      return res.status(404).json({
+        status: "error",
+        message: "Subscription not found.",
+      });
     }
 
-    res.status(200).json(subscription);
+    res.status(200).json({
+      status: "success",
+      message: "Subscription fetched successfully.",
+      data: subscription,
+    });
   } catch (error) {
     console.error("Error fetching subscription:", error);
-    res.status(500).json({ message: "Failed to fetch subscription." });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch subscription.",
+    });
   }
 };
 
+// Get All Subscriptions
 export const getAllSubscriptions = async (req, res) => {
   try {
-    // Fetch all subscriptions from the database
     const subscriptions = await prisma.subscription.findMany({
       include: {
-        mall: true, // Include related mall data
+        mall: true,
       },
     });
 
-    res.status(200).json(subscriptions);
+    res.status(200).json({
+      status: "success",
+      message: "All subscriptions fetched successfully.",
+      data: subscriptions,
+    });
   } catch (error) {
     console.error("Error fetching subscriptions:", error);
-    res.status(500).json({ message: "Failed to fetch subscriptions." });
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch subscriptions.",
+    });
   }
 };
