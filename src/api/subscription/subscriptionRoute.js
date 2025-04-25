@@ -9,5 +9,5 @@ const router = express.Router();
 
 router.post("/add", addSubscription);
 router.get("/get/:mallId", getSubscription);
-router.get("/getAll", getAllSubscriptions);
+router.get("/getall", getAllSubscriptions);
 export default router;
