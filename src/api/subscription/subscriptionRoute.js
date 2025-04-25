@@ -3,7 +3,7 @@ import {
   addSubscription,
   getAllSubscriptions,
   getSubscription,
-} from "./subscriptionController";
+} from "./subscriptionController.js";
 
 const router = express.Router();
 
