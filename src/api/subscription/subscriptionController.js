@@ -28,32 +28,31 @@ export const addSubscription = async (req, res) => {
   }
 };
 
-// Get Subscription by mallId
 export const getSubscription = async (req, res) => {
   const { mallId } = req.params;
 
   try {
-    const subscription = await prisma.subscription.findUnique({
+    const subscriptions = await prisma.subscription.findMany({
       where: { mallId: Number(mallId) },
     });
 
-    if (!subscription) {
+    if (!subscriptions || subscriptions.length === 0) {
       return res.status(404).json({
         status: "error",
-        message: "Subscription not found.",
+        message: "No subscriptions found for this mall.",
       });
     }
 
     res.status(200).json({
       status: "success",
-      message: "Subscription fetched successfully.",
-      data: subscription,
+      message: "Subscriptions fetched successfully.",
+      data: subscriptions,
     });
   } catch (error) {
-    console.error("Error fetching subscription:", error);
+    console.error("Error fetching subscriptions:", error);
     res.status(500).json({
       status: "error",
-      message: "Failed to fetch subscription.",
+      message: "Failed to fetch subscriptions.",
     });
   }
 };
