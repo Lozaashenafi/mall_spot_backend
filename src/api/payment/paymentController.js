@@ -431,8 +431,8 @@ export const getPaymentInfoByUserId = async (req, res) => {
       where: { userId: parseInt(userId) },
       include: {
         payments: true,
-        room: true, // To get room.price
-        user: true, // To get user.username and user.email
+        room: true,
+        user: true,
       },
     });
 
