@@ -457,7 +457,7 @@ export const getPaymentInfoByUserId = async (req, res) => {
         amount: rent.amount,
         paymentDuration: rent.PaymentDuration,
         payments: rent.payments,
-        firstPayment: firstPayment, // Include first payment details here
+        firstPayment: firstPayment,
       };
     });
 
