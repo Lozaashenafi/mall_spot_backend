@@ -422,3 +422,42 @@ export const nextPaymentDays = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+export const getPaymentInfoByUserId = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const rents = await prisma.rent.findMany({
+      where: { userId: parseInt(userId) },
+      include: {
+        payments: true,
+        room: true, // To get room.price
+        user: true, // To get user.username and user.email
+      },
+    });
+
+    if (rents.length === 0) {
+      return res.status(404).json({ message: "No rents found for this user" });
+    }
+
+    const paymentInfo = rents.map((rent) => {
+      const calculatedAmount =
+        (rent.PaymentDuration || 0) * (rent.room?.price || 0);
+
+      return {
+        rentId: rent.id,
+        roomId: rent.roomId,
+        userName: rent.user.username,
+        email: rent.user.email,
+        calculatedAmount, // PaymentDuration * room.price
+        paymentDuration: rent.PaymentDuration,
+        payments: rent.payments,
+      };
+    });
+
+    res.status(200).json(paymentInfo);
+  } catch (error) {
+    console.error("Error fetching payment info:", error);
+    res.status(500).json({ message: "Failed to fetch payment info" });
+  }
+};
