@@ -23,12 +23,10 @@ export const pay = async (req, res) => {
   try {
     let { rentId, amount, paymentDate } = req.body;
 
-    // Validate input
     if (!rentId || !amount || !paymentDate) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Convert rentId to an integer
     rentId = parseInt(rentId, 10);
     if (isNaN(rentId)) {
       return res.status(400).json({ message: "rentId must be a valid number" });
@@ -42,12 +40,15 @@ export const pay = async (req, res) => {
       },
     });
 
-    res.status(201).json(payment);
+    res.status(201).json({
+      message: "Payment Successful",
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 export const getPaymentsByUserId = async (req, res) => {
   const { userId } = req.params;
 
