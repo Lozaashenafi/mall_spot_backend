@@ -441,15 +441,12 @@ export const getPaymentInfoByUserId = async (req, res) => {
     }
 
     const paymentInfo = rents.map((rent) => {
-      const calculatedAmount =
-        (rent.PaymentDuration || 0) * (rent.room?.price || 0);
-
       return {
         rentId: rent.id,
         roomId: rent.roomId,
         userName: rent.user.username,
         email: rent.user.email,
-        calculatedAmount, // PaymentDuration * room.price
+        amount: rent.amount,
         paymentDuration: rent.PaymentDuration,
         payments: rent.payments,
       };
