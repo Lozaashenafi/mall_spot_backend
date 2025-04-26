@@ -20,6 +20,6 @@ router.get("/:id", paymentDetails);
 router.post("/firstpay", makeFirstPayment);
 router.get("/getfirstpay/:mallId", getFirstPayments);
 router.get("/next/:userId", nextPaymentDays);
-router.get("/paymentinfo/:userId", getPaymentInfoByUserId);
+router.get("/info/:userId", getPaymentInfoByUserId);
 
 export default router;
