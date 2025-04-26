@@ -440,6 +440,14 @@ export const getPaymentInfoByUserId = async (req, res) => {
       return res.status(404).json({ message: "No rents found for this user" });
     }
 
+    const acceptedUser = await prisma.acceptedUser.findUnique({
+      where: { userId: parseInt(userId) },
+      include: {
+        Firstpayment: true,
+      },
+    });
+    const firstPayment = acceptedUser ? acceptedUser.Firstpayment : [];
+
     const paymentInfo = rents.map((rent) => {
       return {
         rentId: rent.id,
@@ -449,6 +457,7 @@ export const getPaymentInfoByUserId = async (req, res) => {
         amount: rent.amount,
         paymentDuration: rent.PaymentDuration,
         payments: rent.payments,
+        firstPayment: firstPayment, // Include first payment details here
       };
     });
 
