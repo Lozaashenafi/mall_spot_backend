@@ -51,13 +51,13 @@ export const pay = async (req, res) => {
       return res.status(404).json({ message: "Mall owner not found" });
     }
 
-    // Emit the notification to the mall owner via Socket.IO
     io.to(`user-${mallOwner.id}`).emit("First Payment", {
-      message: `Tenant ${rent.user.username} has made their  payment for your mall.`,
+      message: `Tenant ${rent.user.username} has made their payment for your mall.`,
       rentId: rent.id,
       amount: payment.amount,
       paymentDate: payment.paymentDate,
-      tenant: {
+      user: {
+        // use "user" not "tenant"
         userId: rent.user.id,
         userName: rent.user.username,
         userPhone: rent.user.phoneNumber,
