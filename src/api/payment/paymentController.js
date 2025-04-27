@@ -52,7 +52,7 @@ export const pay = async (req, res) => {
     }
 
     io.to(`user-${mallOwner.id}`).emit("First Payment", {
-      rentId: rent.id,
+      id: rent.id,
       message: `Tenant ${rent.user.username} has made their payment ${payment.amount} birr for your mall.`,
       user: {
         userId: rent.user.id,
