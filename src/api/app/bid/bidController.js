@@ -169,6 +169,7 @@ export const bidDetails = async (req, res) => {
       where: { bidId: parseInt(bidId) },
       include: {
         post: true,
+        user: true,
         mall: {
           include: {
             agreements: true,
