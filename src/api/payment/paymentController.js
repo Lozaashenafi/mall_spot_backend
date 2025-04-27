@@ -4,21 +4,6 @@ import path from "path";
 import { addMonths, differenceInDays, isBefore } from "date-fns";
 
 import { io } from "../../../app.js";
-// const sendNotification = async (userId, message, type) => {
-//   try {
-//     await prisma.notification.create({
-//       data: {
-//         userId,
-//         message,
-//         type,
-//         status: "UNREAD",
-//       },
-//     });
-//   } catch (error) {
-//     console.error("Error sending notification:", error);
-//     throw new Error("Failed to send notification."); // Throw a custom error with a message
-//   }
-// };
 export const pay = async (req, res) => {
   try {
     let { rentId, amount, paymentDate } = req.body;
@@ -32,6 +17,20 @@ export const pay = async (req, res) => {
       return res.status(400).json({ message: "rentId must be a valid number" });
     }
 
+    // Fetch the rent record to get the associated mallId
+    const rent = await prisma.rent.findUnique({
+      where: { id: rentId },
+      include: {
+        mall: true,
+        user: true, // Fetch the user (tenant) who made the payment
+      },
+    });
+
+    if (!rent) {
+      return res.status(404).json({ message: "Rent record not found" });
+    }
+
+    // Create payment record
     const payment = await prisma.payment.create({
       data: {
         rentId,
@@ -39,18 +38,34 @@ export const pay = async (req, res) => {
         paymentDate: new Date(paymentDate),
       },
     });
-    // Emit the notification to the post owner (who is the user associated with the post)
-    io.to(`user-${acceptedUser.post.userId}`).emit("First Payment", {
-      id: request.id, // Use the ID of the created request
-      message: `User ${acceptedUser.user.username} has registered as a tenant and made their first payment.`, // Your notification message
-      user: {
-        userId: acceptedUser.user.id,
-        userName: acceptedUser.user.username,
-        userPhone: acceptedUser.user.phone,
+
+    // Fetch the mall owner by querying the User model using mallId
+    const mallOwner = await prisma.user.findFirst({
+      where: {
+        mallId: rent.mallId,
+        role: "MALL_OWNER",
       },
     });
+
+    if (!mallOwner) {
+      return res.status(404).json({ message: "Mall owner not found" });
+    }
+
+    // Emit the notification to the mall owner via Socket.IO
+    io.to(`user-${mallOwner.id}`).emit("First Payment", {
+      message: `Tenant ${rent.user.username} has made their  payment for your mall.`,
+      rentId: rent.id,
+      amount: payment.amount,
+      paymentDate: payment.paymentDate,
+      tenant: {
+        userId: rent.user.id,
+        userName: rent.user.username,
+        userPhone: rent.user.phoneNumber,
+      },
+    });
+
     res.status(201).json({
-      message: "Payment Successful",
+      message: "Payment Successful and Notification Sent to Mall Owner",
     });
   } catch (error) {
     console.error(error);
@@ -334,10 +349,10 @@ export const makeFirstPayment = async (req, res) => {
         agreementFile: relativeAgreementPath,
       },
     });
-    // Emit the notification to the post owner (who is the user associated with the post)
+
     io.to(`user-${acceptedUser.post.userId}`).emit("First Payment", {
-      id: request.id, // Use the ID of the created request
-      message: `User ${acceptedUser.user.username} has registered as a tenant and made their first payment.`, // Your notification message
+      id: acceptedUserId,
+      message: `User ${acceptedUser.user.username} has registered as a tenant and made their first payment.`,
       user: {
         userId: acceptedUser.user.id,
         userName: acceptedUser.user.username,
