@@ -56,7 +56,7 @@ export const pay = async (req, res) => {
       message: `Tenant ${rent.user.username} has made their payment ${payment.amount} birr for your mall.`,
       user: {
         userId: rent.user.id,
-        userName: rent.user.username,
+        userName: rent.user.fullName,
         userPhone: rent.user.phoneNumber,
       },
     });
@@ -351,7 +351,7 @@ export const makeFirstPayment = async (req, res) => {
       message: `User ${acceptedUser.user.username} has registered as a tenant and made their first payment.`,
       user: {
         userId: acceptedUser.user.id,
-        userName: acceptedUser.user.username,
+        userName: acceptedUser.user.fullName,
         userPhone: acceptedUser.user.phone,
       },
     });
