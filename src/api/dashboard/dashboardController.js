@@ -224,7 +224,6 @@ export const getDashboardData = async (req, res) => {
     });
   }
 };
-
 export const getAdminDashbordData = async (req, res) => {
   try {
     // Total malls and users
@@ -235,6 +234,13 @@ export const getAdminDashbordData = async (req, res) => {
     const totalSubscriptionRevenue = await prisma.subscription.aggregate({
       _sum: {
         price: true,
+      },
+    });
+
+    // Payment revenue (all time)
+    const totalPaymentRevenue = await prisma.payment.aggregate({
+      _sum: {
+        amount: true,
       },
     });
 
@@ -288,6 +294,7 @@ export const getAdminDashbordData = async (req, res) => {
       totalMalls,
       totalUsers,
       totalSubscriptionRevenue: totalSubscriptionRevenue._sum.price || 0,
+      totalPaymentRevenue: totalPaymentRevenue._sum.amount || 0,
       mallRegistrations: mallRegistrations.reverse(), // Oldest year first
       subscriptionRevenue: subscriptionRevenue.reverse(), // Oldest year first
     });
