@@ -1,5 +1,7 @@
 import prisma from "../../config/prismaClient.js";
 import { startOfYear, subYears, endOfYear } from "date-fns";
+import prisma from "../../config/prismaClient.js";
+import { startOfYear, subYears, endOfYear } from "date-fns";
 
 export const getDashboardData = async (req, res) => {
   try {
@@ -9,11 +11,9 @@ export const getDashboardData = async (req, res) => {
     const startThisYear = startOfYear(now);
     const startLastYear = startOfYear(subYears(now, 1));
 
-    // Run base queries in parallel
     const [
       postCount,
       tenantCount,
-      firstPaymentRevenue,
       rentPaymentRevenue,
       thisYearRevenue,
       lastYearRevenue,
@@ -26,17 +26,6 @@ export const getDashboardData = async (req, res) => {
         where: {
           mallId,
           role: "TENANT",
-        },
-      }),
-
-      prisma.firstpayment.aggregate({
-        _sum: {
-          amount: true,
-        },
-        where: {
-          acceptedUser: {
-            mallId,
-          },
         },
       }),
 
@@ -81,10 +70,7 @@ export const getDashboardData = async (req, res) => {
       }),
     ]);
 
-    const totalRevenue =
-      (firstPaymentRevenue._sum.amount || 0) +
-      (rentPaymentRevenue._sum.amount || 0);
-
+    const totalRevenue = rentPaymentRevenue._sum.amount || 0;
     const currentRevenue = thisYearRevenue._sum.amount || 0;
     const previousRevenue = lastYearRevenue._sum.amount || 0;
 
@@ -93,7 +79,6 @@ export const getDashboardData = async (req, res) => {
         ? 100
         : ((currentRevenue - previousRevenue) / previousRevenue) * 100;
 
-    // Get room status counts
     const [totalRooms, occupiedRooms] = await Promise.all([
       prisma.rooms.count({
         where: {
@@ -117,55 +102,35 @@ export const getDashboardData = async (req, res) => {
       totalRooms > 0 ? (occupiedRooms / totalRooms) * 100 : 0;
     const availabilityPercent = 100 - occupancyPercent;
 
-    // Create the last 4 years including this year
     const currentYear = new Date().getFullYear();
     const years = [0, 1, 2, 3].map((offset) => currentYear - offset).reverse();
 
     const revenueByYearPromises = years.map((year) => {
       const start = startOfYear(new Date(year, 0, 1));
       const end = endOfYear(start);
-      return Promise.all([
-        prisma.payment.aggregate({
-          _sum: {
-            amount: true,
+      return prisma.payment.aggregate({
+        _sum: {
+          amount: true,
+        },
+        where: {
+          rent: {
+            mallId,
           },
-          where: {
-            rent: {
-              mallId,
-            },
-            paymentDate: {
-              gte: start,
-              lte: end,
-            },
+          paymentDate: {
+            gte: start,
+            lte: end,
           },
-        }),
-        prisma.firstpayment.aggregate({
-          _sum: {
-            amount: true,
-          },
-          where: {
-            paymentDate: {
-              gte: start,
-              lte: end,
-            },
-            acceptedUser: {
-              mallId,
-            },
-          },
-        }),
-      ]);
+        },
+      });
     });
 
     const revenueByYearResults = await Promise.all(revenueByYearPromises);
 
-    const yearlyRevenue = revenueByYearResults.map(([rent, first], index) => ({
+    const yearlyRevenue = revenueByYearResults.map((result, index) => ({
       year: years[index],
-      rent: rent._sum.amount || 0,
-      firstPayment: first._sum.amount || 0,
-      total: (rent._sum.amount || 0) + (first._sum.amount || 0),
+      rent: result._sum.amount || 0,
+      total: result._sum.amount || 0,
     }));
-
-    // Create the last 4 years including this year
 
     const rentGrowthPromises = years.map((year) => {
       const start = startOfYear(new Date(year, 0, 1));
@@ -192,7 +157,6 @@ export const getDashboardData = async (req, res) => {
       rentAmount: result._sum.amount || 0,
     }));
 
-    // Now you can calculate the rent growth rate
     const rentGrowthRate = yearlyRent.map((current, idx) => {
       const previous = yearlyRent[idx - 1];
       const growth = previous
@@ -205,6 +169,7 @@ export const getDashboardData = async (req, res) => {
         growthRate: growth.toFixed(2),
       };
     });
+
     return res.status(200).json({
       postCount,
       tenantCount,
@@ -224,6 +189,7 @@ export const getDashboardData = async (req, res) => {
     });
   }
 };
+
 export const getAdminDashbordData = async (req, res) => {
   try {
     // Total malls and users
@@ -234,13 +200,6 @@ export const getAdminDashbordData = async (req, res) => {
     const totalSubscriptionRevenue = await prisma.subscription.aggregate({
       _sum: {
         price: true,
-      },
-    });
-
-    // Payment revenue (all time)
-    const totalPaymentRevenue = await prisma.payment.aggregate({
-      _sum: {
-        amount: true,
       },
     });
 
@@ -294,7 +253,6 @@ export const getAdminDashbordData = async (req, res) => {
       totalMalls,
       totalUsers,
       totalSubscriptionRevenue: totalSubscriptionRevenue._sum.price || 0,
-      totalPaymentRevenue: totalPaymentRevenue._sum.amount || 0,
       mallRegistrations: mallRegistrations.reverse(), // Oldest year first
       subscriptionRevenue: subscriptionRevenue.reverse(), // Oldest year first
     });
