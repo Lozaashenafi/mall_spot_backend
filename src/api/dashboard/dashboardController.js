@@ -245,12 +245,16 @@ export const getAdminDashbordData = async (req, res) => {
       })
     );
 
+    // Remove the post count query with mallId, as it’s not required for admin dashboard
+    const totalPosts = await prisma.post.count();
+
     res.json({
       totalMalls,
       totalUsers,
       totalSubscriptionRevenue,
       mallRegistrations: mallRegistrations.reverse(),
       subscriptionRevenue: subscriptionRevenue.reverse(),
+      totalPosts, // Add the totalPosts data to the response
     });
   } catch (error) {
     console.error("Admin Dashboard Error:", error);
