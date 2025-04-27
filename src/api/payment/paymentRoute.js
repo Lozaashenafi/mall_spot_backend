@@ -9,6 +9,7 @@ import {
   paymentDetails,
   nextPaymentDays,
   getPaymentInfoByUserId,
+  getMallPayments,
 } from "./paymentController.js";
 
 const router = express.Router();
@@ -19,6 +20,7 @@ router.get("/rent/:userId", checkRentPayments);
 router.get("/:id", paymentDetails);
 router.post("/firstpay", makeFirstPayment);
 router.get("/getfirstpay/:mallId", getFirstPayments);
+router.get("/getpayment/:mallId", getMallPayments);
 router.get("/next/:userId", nextPaymentDays);
 router.get("/info/:userId", getPaymentInfoByUserId);
 

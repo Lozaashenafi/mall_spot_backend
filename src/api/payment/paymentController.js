@@ -393,6 +393,33 @@ export const getFirstPayments = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+export const getMallPayments = async (req, res) => {
+  try {
+    const { mallId } = req.params;
+    if (!mallId) {
+      return res.status(400).json({ message: "Mall ID is required" });
+    }
+
+    const payments = await prisma.payment.findMany({
+      where: {
+        rent: {
+          mallId: parseInt(mallId),
+        },
+      },
+      include: {
+        rent: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+    res.json(payments);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
 export const nextPaymentDays = async (req, res) => {
   const { userId } = req.params;
