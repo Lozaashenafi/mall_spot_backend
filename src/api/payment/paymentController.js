@@ -161,31 +161,6 @@ export const checkRentPayments = async (req, res) => {
   }
 };
 
-export const getPayments = async (req, res) => {
-  try {
-    const { mallId } = req.query;
-
-    if (!mallId) {
-      return res.status(400).json({ message: "Mall ID is required" });
-    }
-
-    const payments = await prisma.payment.findMany({
-      where: {
-        rent: {
-          user: {
-            mallId: Number(mallId),
-          },
-        },
-      },
-      include: { rent: true },
-    });
-
-    res.json(payments);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
 export const paymentDetails = async (req, res) => {
   try {
     const { id } = req.params;

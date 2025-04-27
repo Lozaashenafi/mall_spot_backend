@@ -14,7 +14,6 @@ import {
 
 const router = express.Router();
 router.post("/pay", pay);
-router.get("/:mallId/list", getPayments);
 router.get("/user/:userId", getPaymentsByUserId);
 router.get("/rent/:userId", checkRentPayments);
 router.get("/:id", paymentDetails);
