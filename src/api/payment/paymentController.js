@@ -51,7 +51,7 @@ export const pay = async (req, res) => {
       return res.status(404).json({ message: "Mall owner not found" });
     }
 
-    io.to(`user-${mallOwner.id}`).emit("First Payment", {
+    io.to(`user-${mallOwner.id}`).emit("FirstPayment", {
       id: rent.id,
       message: `Tenant ${rent.user.username} has made their payment ${payment.amount} birr for your mall.`,
       user: {
