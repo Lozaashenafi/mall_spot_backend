@@ -6,7 +6,7 @@ import {
 
 const router = express.Router();
 
-router.get("/:mallId", getDashboardData);
+router.get("/owner/:mallId", getDashboardData);
 router.get("/admin", getAdminDashbordData);
 
 export default router;
