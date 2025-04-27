@@ -156,9 +156,12 @@ export const requestDetails = async (req, res) => {
       where: { requestId: parseInt(id) },
       include: {
         post: true,
+        user: {
+          select: { id: true, fullName: true, email: true },
+        },
         mall: {
           include: {
-            agreements: { include: { user: true } },
+            agreements: true,
           },
         },
         request: true,
