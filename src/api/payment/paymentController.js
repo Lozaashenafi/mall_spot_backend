@@ -4,21 +4,21 @@ import path from "path";
 import { addMonths, differenceInDays, isBefore } from "date-fns";
 
 import { io } from "../../../app.js";
-const sendNotification = async (userId, message, type) => {
-  try {
-    await prisma.notification.create({
-      data: {
-        userId,
-        message,
-        type,
-        status: "UNREAD",
-      },
-    });
-  } catch (error) {
-    console.error("Error sending notification:", error);
-    throw new Error("Failed to send notification."); // Throw a custom error with a message
-  }
-};
+// const sendNotification = async (userId, message, type) => {
+//   try {
+//     await prisma.notification.create({
+//       data: {
+//         userId,
+//         message,
+//         type,
+//         status: "UNREAD",
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Error sending notification:", error);
+//     throw new Error("Failed to send notification."); // Throw a custom error with a message
+//   }
+// };
 export const pay = async (req, res) => {
   try {
     let { rentId, amount, paymentDate } = req.body;
@@ -39,7 +39,16 @@ export const pay = async (req, res) => {
         paymentDate: new Date(paymentDate),
       },
     });
-
+    // Emit the notification to the post owner (who is the user associated with the post)
+    io.to(`user-${acceptedUser.post.userId}`).emit("First Payment", {
+      id: request.id, // Use the ID of the created request
+      message: `User ${acceptedUser.user.username} has registered as a tenant and made their first payment.`, // Your notification message
+      user: {
+        userId: acceptedUser.user.id,
+        userName: acceptedUser.user.username,
+        userPhone: acceptedUser.user.phone,
+      },
+    });
     res.status(201).json({
       message: "Payment Successful",
     });
@@ -325,23 +334,16 @@ export const makeFirstPayment = async (req, res) => {
         agreementFile: relativeAgreementPath,
       },
     });
-
-    // Step 9: Notify Owner
-    const notificationPayload = {
-      id: parseInt(acceptedUserId),
-      message: `User ${acceptedUser.user.username} has registered as a tenant and made their first payment.`,
+    // Emit the notification to the post owner (who is the user associated with the post)
+    io.to(`user-${acceptedUser.post.userId}`).emit("First Payment", {
+      id: request.id, // Use the ID of the created request
+      message: `User ${acceptedUser.user.username} has registered as a tenant and made their first payment.`, // Your notification message
       user: {
         userId: acceptedUser.user.id,
         userName: acceptedUser.user.username,
         userPhone: acceptedUser.user.phone,
       },
-    };
-
-    io.to(`user-${acceptedUser.post.userId}`).emit(
-      "First Payment",
-      notificationPayload
-    );
-
+    });
     return res.status(201).json({
       message:
         "Payment processed and Rent created successfully with agreement.",
