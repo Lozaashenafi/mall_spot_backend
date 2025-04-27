@@ -1,7 +1,5 @@
 import prisma from "../../config/prismaClient.js";
 import { startOfYear, subYears, endOfYear } from "date-fns";
-import prisma from "../../config/prismaClient.js";
-import { startOfYear, subYears, endOfYear } from "date-fns";
 
 export const getDashboardData = async (req, res) => {
   try {
