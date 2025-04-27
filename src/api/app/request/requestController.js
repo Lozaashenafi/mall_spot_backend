@@ -158,7 +158,7 @@ export const requestDetails = async (req, res) => {
         post: true,
         mall: {
           include: {
-            agreements: true,
+            agreements: { include: { user: true } },
           },
         },
         request: true,
