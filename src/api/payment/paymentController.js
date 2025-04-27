@@ -51,7 +51,7 @@ export const pay = async (req, res) => {
       return res.status(404).json({ message: "Mall owner not found" });
     }
 
-    io.to(`user-${mallOwner.id}`).emit("newRequest", {
+    io.to(`user-${mallOwner.id}`).emit("FirstPayment", {
       id: rent.id,
       message: `Tenant ${rent.user.username} has made their payment ${payment.amount} birr for your mall.`,
       user: {
@@ -60,7 +60,6 @@ export const pay = async (req, res) => {
         userPhone: rent.user.phoneNumber,
       },
     });
-
     res.status(201).json({
       message: "Payment Successful and Notification Sent to Mall Owner",
     });
@@ -347,7 +346,7 @@ export const makeFirstPayment = async (req, res) => {
       },
     });
 
-    io.to(`user-${acceptedUser.post.userId}`).emit("First Payment", {
+    io.to(`user-${acceptedUser.post.userId}`).emit("FirstPayment", {
       id: acceptedUserId,
       message: `User ${acceptedUser.user.username} has registered as a tenant and made their first payment.`,
       user: {

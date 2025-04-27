@@ -53,7 +53,7 @@ io.on("connection", (socket) => {
 
 app.get("/api/test-notify/:userId", (req, res) => {
   const { userId } = req.params;
-  io.to(`user-${userId}`).emit("newRequest", {
+  io.to(`user-${userId}`).emit("FirstPayment", {
     id: Date.now(),
     message: "🔔 New request triggered manually",
     user: {
