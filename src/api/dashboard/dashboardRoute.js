@@ -1,8 +1,12 @@
 import express from "express";
-import { getDashboardData } from "./dashboardController.js";
+import {
+  getAdminDashbordData,
+  getDashboardData,
+} from "./dashboardController.js";
 
 const router = express.Router();
 
 router.get("/:mallId", getDashboardData);
+router.get("/admin", getAdminDashbordData);
 
 export default router;

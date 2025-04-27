@@ -224,3 +224,75 @@ export const getDashboardData = async (req, res) => {
     });
   }
 };
+
+export const getAdminDashbordData = async (req, res) => {
+  try {
+    // Total malls and users
+    const totalMalls = await prisma.mall.count();
+    const totalUsers = await prisma.user.count();
+
+    // Subscription revenue (all time)
+    const totalSubscriptionRevenue = await prisma.subscription.aggregate({
+      _sum: {
+        price: true,
+      },
+    });
+
+    // Get current year
+    const currentYear = new Date().getFullYear();
+
+    // Mall registrations in last 4 years
+    const mallRegistrations = await Promise.all(
+      Array.from({ length: 4 }).map(async (_, index) => {
+        const year = currentYear - index;
+        const startOfYear = new Date(`${year}-01-01T00:00:00.000Z`);
+        const endOfYear = new Date(`${year}-12-31T23:59:59.999Z`);
+
+        const count = await prisma.mall.count({
+          where: {
+            createdAt: {
+              gte: startOfYear,
+              lte: endOfYear,
+            },
+          },
+        });
+
+        return { year, count };
+      })
+    );
+
+    // Subscription revenue per year for last 4 years
+    const subscriptionRevenue = await Promise.all(
+      Array.from({ length: 4 }).map(async (_, index) => {
+        const year = currentYear - index;
+        const startOfYear = new Date(`${year}-01-01T00:00:00.000Z`);
+        const endOfYear = new Date(`${year}-12-31T23:59:59.999Z`);
+
+        const revenue = await prisma.subscription.aggregate({
+          _sum: {
+            price: true,
+          },
+          where: {
+            createdAt: {
+              gte: startOfYear,
+              lte: endOfYear,
+            },
+          },
+        });
+
+        return { year, revenue: revenue._sum.price || 0 };
+      })
+    );
+
+    res.json({
+      totalMalls,
+      totalUsers,
+      totalSubscriptionRevenue: totalSubscriptionRevenue._sum.price || 0,
+      mallRegistrations: mallRegistrations.reverse(), // Oldest year first
+      subscriptionRevenue: subscriptionRevenue.reverse(), // Oldest year first
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Something went wrong!" });
+  }
+};
