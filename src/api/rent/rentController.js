@@ -220,6 +220,7 @@ export const getRentInfoByMallId = async (req, res) => {
       },
       include: {
         rentInfo: true,
+        room: true,
       },
     });
 
