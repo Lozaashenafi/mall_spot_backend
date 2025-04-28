@@ -2,7 +2,6 @@ import express from "express";
 import {
   checkRentPayments,
   getFirstPayments,
-  getPayments,
   getPaymentsByUserId,
   makeFirstPayment,
   pay,
