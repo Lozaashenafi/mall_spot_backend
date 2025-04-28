@@ -210,3 +210,31 @@ export const getRentId = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch rents" });
   }
 };
+
+export const getRentInfoByMallId = async (req, res) => {
+  const { mallId } = req.params;
+
+  try {
+    const rents = await prisma.rent.findMany({
+      where: {
+        room: {
+          mallId: parseInt(mallId),
+        },
+      },
+      include: {
+        user: true,
+        room: true,
+        rentInfo: true,
+      },
+    });
+
+    if (!rents || rents.length === 0) {
+      return res.status(404).json({ message: "No rents found for this mall" });
+    }
+
+    res.json(rents);
+  } catch (error) {
+    console.error("Error fetching rents:", error);
+    res.status(500).json({ message: "Failed to fetch rents" });
+  }
+};

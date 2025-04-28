@@ -4,6 +4,7 @@ import {
   assignRent,
   getRentId,
   getRentInfo,
+  getRentInfoByMallId,
   getRents,
   updateRentInfo,
   upload,
@@ -16,4 +17,5 @@ router.put("/:rentId", upload, updateRentInfo);
 router.get("/:mallId/list", getRents);
 router.get("/:rentId", getRentInfo);
 router.get("/user/:userId", getRentId);
+router.get("/rentinfo/:mallId", getRentInfoByMallId);
 export default router;
