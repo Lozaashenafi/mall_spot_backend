@@ -219,8 +219,6 @@ export const getRentInfoByMallId = async (req, res) => {
         mallId: parseInt(mallId),
       },
       include: {
-        user: true,
-        room: true,
         rentInfo: true,
       },
     });
