@@ -1,5 +1,5 @@
 import express from "express";
-import { initiateChapaPayment } from "./chapaController";
+import { initiateChapaPayment } from "./chapaController.js";
 
 const router = express.Router();
 
