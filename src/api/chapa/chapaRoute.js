@@ -3,6 +3,6 @@ import { initiateChapaPayment } from "./chapaController.js";
 
 const router = express.Router();
 
-router.get("/initialize", initiateChapaPayment);
+router.post("/initialize", initiateChapaPayment);
 
 export default router;
