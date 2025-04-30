@@ -1,5 +1,4 @@
-const CHAPA_SECRET_KEY =
-  process.env.CHAPA_SECRET_KEY || "CHAPA-TEST-SECRET-KEY";
+const CHAPA_SECRET_KEY = "CHASECK_TEST-ori1feYrlm8g4eY5p0zgG27UL1ygbLNx";
 import axios from "axios";
 
 export const initiateChapaPayment = async (req, res) => {
