@@ -365,7 +365,6 @@ export const registerMall = async (req, res) => {
 };
 export const registerMallByItself = async (req, res) => {
   try {
-    // Validate incoming request using Joi
     const { error } = mallSchema.register.validate(req.body, {
       abortEarly: false,
     });
@@ -444,21 +443,6 @@ export const registerMallByItself = async (req, res) => {
 
     if (images.length > 0) {
       await prisma.mallImage.createMany({ data: images });
-    }
-
-    // Save invoice if uploaded
-    if (req.files?.invoice) {
-      const invoiceFile = req.files.invoice[0];
-      const invoiceURL = `/uploads/${invoiceFile.filename}`;
-
-      // Create an Invoice entry
-      await prisma.invoice.create({
-        data: {
-          mallId: mall.id,
-          invoiceURL,
-          flag: "false", // Set flag to false until verified by admin
-        },
-      });
     }
 
     // Create User (Mall Owner or User) and set status to INACTIVE

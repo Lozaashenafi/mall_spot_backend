@@ -15,6 +15,7 @@ import notificationRoute from "../api/notifications/notificationRoute.js";
 import dashboardRoute from "../api/dashboard/dashboardRoute.js";
 import profileRoute from "../api/app/profile/profileRoute.js";
 import subscriptionRoute from "../api/subscription/subscriptionRoute.js";
+import chapaRoute from "../api/chapa/chapaRoute.js"; // Add `.js` extension
 import { profile } from "console";
 const router = express.Router();
 
@@ -35,5 +36,6 @@ router.use("/notification", notificationRoute);
 router.use("/dashboard", dashboardRoute);
 router.use("/profile", profileRoute);
 router.use("/subscription", subscriptionRoute);
+router.use("/chapa", chapaRoute);
 
 export default router;
