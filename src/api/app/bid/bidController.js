@@ -125,7 +125,14 @@ export const addBid = async (req, res) => {
           userPhone,
         },
       });
-
+      // Create notification
+      const acceptNotification = await prisma.notification.create({
+        data: {
+          userId: post.userId,
+          message: `New bid from"${userName}" has been sent! 🎉\nphone number : "${userPhone}"`,
+          type: "BID",
+        },
+      });
       res.status(201).json({
         message: "Bid and deposit recorded successfully",
         bid,

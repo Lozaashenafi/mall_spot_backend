@@ -99,6 +99,14 @@ export const addRequest = async (req, res) => {
           userPhone: userPhone, // The user's phone number
         },
       });
+      // Create notification
+      const acceptNotification = await prisma.notification.create({
+        data: {
+          userId: post.userId,
+          message: `New request from user "${userName}" has been sent! 🎉\nphone number : "${userPhone}"`,
+          type: "REQUEST",
+        },
+      });
 
       res.status(201).json({ message: "Request added successfully", request });
     } catch (error) {

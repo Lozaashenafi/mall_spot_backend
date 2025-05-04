@@ -60,6 +60,14 @@ export const pay = async (req, res) => {
         userPhone: rent.user.phoneNumber,
       },
     });
+    // Create notification
+    const acceptNotification = await prisma.notification.create({
+      data: {
+        userId: mallOwner.id,
+        message: `Tenant ${rent.user.username} has made their payment ${payment.amount} birr for your mall.`,
+        type: "PAYMENT",
+      },
+    });
     res.status(201).json({
       message: "Payment Successful and Notification Sent to Mall Owner",
     });
@@ -328,6 +336,14 @@ export const makeFirstPayment = async (req, res) => {
         userId: acceptedUser.user.id,
         userName: acceptedUser.user.fullName,
         userPhone: acceptedUser.user.phone,
+      },
+    });
+    // Create notification
+    const acceptNotification = await prisma.notification.create({
+      data: {
+        userId: acceptedUser.post.userId,
+        message: `User ${acceptedUser.user.username} has registered as a tenant and made their first payment.`,
+        type: "PAYMENT",
       },
     });
     return res.status(201).json({

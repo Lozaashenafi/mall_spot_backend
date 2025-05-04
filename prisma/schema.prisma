@@ -39,6 +39,7 @@ enum NotificationType {
   REQUEST
   MESSAGE
   SYSTEM
+  PAYMENT
   ALERT
 }
 
