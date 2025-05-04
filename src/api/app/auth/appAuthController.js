@@ -67,7 +67,10 @@ export const login = async (req, res) => {
       },
     });
 
-    if (!user) return res.status(401).json({ message: "Invalid credentials" });
+    if (!user)
+      return res
+        .status(401)
+        .json({ message: "Incorrect email or password. Please try again." });
 
     // Check if user is an ADMIN or MALL_OWNER
     if (user.role !== "USER" && user.role !== "TENANT")
@@ -76,9 +79,10 @@ export const login = async (req, res) => {
     // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
-      return res
-        .status(401)
-        .json({ message: "Invalid credentials", success: false });
+      return res.status(401).json({
+        message: "Incorrect email or password. Please try again.",
+        success: false,
+      });
 
     // Generate JWT token
     const tokenPayload = {
