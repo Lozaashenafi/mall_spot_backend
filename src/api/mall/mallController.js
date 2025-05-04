@@ -406,19 +406,31 @@ export const registerMallByItself = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Invalid totalFloors or totalRooms" });
     }
-
-    // Create Mall entry
-    const mall = await prisma.mall.create({
-      data: {
-        mallName,
-        latitude: parsedLatitude,
-        longitude: parsedLongitude,
-        address,
-        description,
-        totalFloors: parsedTotalFloors,
-        totalRooms: parsedTotalRooms,
-      },
-    });
+    try {
+      // Create Mall entry
+      const mall = await prisma.mall.create({
+        data: {
+          mallName,
+          latitude: parsedLatitude,
+          longitude: parsedLongitude,
+          address,
+          description,
+          totalFloors: parsedTotalFloors,
+          totalRooms: parsedTotalRooms,
+        },
+      });
+    } catch (error) {
+      if (error.code === "P2002") {
+        return res.status(400).json({
+          success: false,
+          message: "Mall name already exists. Please choose another.",
+        });
+      }
+      console.error("Mall registration failed:", error);
+      res
+        .status(500)
+        .json({ success: false, message: "Server error during registration." });
+    }
 
     // Save images if uploaded
     const images = [];
