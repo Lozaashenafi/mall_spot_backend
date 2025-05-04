@@ -411,7 +411,6 @@ export const getMallPayments = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 export const nextPaymentDays = async (req, res) => {
   const { userId } = req.params;
 
@@ -424,30 +423,50 @@ export const nextPaymentDays = async (req, res) => {
     if (!rent) {
       return res.status(404).json({ message: "Rent not found" });
     }
+    // If no payments exist, use rent.createdAt and PaymentDuration
+    if (rent.payments.length === 0) {
+      const nextPaymentDate = addMonths(
+        new Date(rent.createdAt),
+        rent.PaymentDuration
+      );
+      const daysLeft = differenceInDays(nextPaymentDate, new Date());
 
-    // Get the latest payment by sorting payments
-    const latestPayment = rent.payments.sort(
-      (a, b) => new Date(b.paymentDate) - new Date(a.paymentDate)
-    )[0];
+      let message =
+        daysLeft > 0
+          ? `${daysLeft} day(s) left until next payment`
+          : `Payment is overdue by ${Math.abs(daysLeft)} day(s)`;
 
-    const baseDate = latestPayment
-      ? new Date(latestPayment.paymentDate)
-      : new Date(rent.createdAt);
+      return res.status(200).json({
+        message,
+        nextPaymentDate,
+        lastPaymentDate: rent.createdAt,
+      });
+    }
 
-    const nextPaymentDate = addMonths(baseDate, rent.PaymentDuration);
+    // Sort payments by date
+    const sortedPayments = rent.payments.sort(
+      (a, b) => new Date(a.paymentDate) - new Date(b.paymentDate)
+    );
+
+    // Sum the total duration from all payments
+    const totalDuration = rent.payments.reduce(
+      (sum, payment) => sum + payment.paymentDuration, // assuming each payment has a `paymentDuration`
+      0
+    );
+
+    const firstPaymentDate = new Date(sortedPayments[0].paymentDate);
+    const nextPaymentDate = addMonths(firstPaymentDate, totalDuration);
     const daysLeft = differenceInDays(nextPaymentDate, new Date());
 
-    let message;
-    if (daysLeft > 0) {
-      message = `${daysLeft} day(s) left until next payment`;
-    } else {
-      message = `Payment is overdue by ${Math.abs(daysLeft)} day(s)`;
-    }
+    let message =
+      daysLeft > 0
+        ? `${daysLeft} day(s) left until next payment`
+        : `Payment is overdue by ${Math.abs(daysLeft)} day(s)`;
 
     res.status(200).json({
       message,
       nextPaymentDate,
-      lastPaymentDate: latestPayment?.paymentDate || rent.createdAt,
+      lastPaymentDate: sortedPayments.at(-1).paymentDate,
     });
   } catch (error) {
     console.error("Error fetching next payment days:", error);
