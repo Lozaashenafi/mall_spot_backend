@@ -27,7 +27,7 @@ router.post(
   uploadMallImagesMiddleware,
   registerMallByItself
 );
-router.post("/owner/register", isAdmin, OwnerRegister);
+router.post("/owner/register", OwnerRegister);
 router.post("/save-mall-info", uploadAgreement, mallInfo);
 router.get("/malls", getMalls);
 router.get("/pending", getPendingMalls);

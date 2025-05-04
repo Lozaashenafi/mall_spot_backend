@@ -113,6 +113,7 @@ const uploadMallImages = multer({ storage }).fields([
 ]);
 
 const uploadMallAgreement = multer({ storage }).single("agreementFile");
+
 export const OwnerRegister = async (req, res) => {
   try {
     const { fullName, email, phoneNumber, password, confirmPassword, mallId } =
@@ -164,7 +165,7 @@ export const OwnerRegister = async (req, res) => {
         phoneNumber,
         password: hashedPassword,
         role: "MALL_OWNER",
-        Mall: { connect: { id: mallIdInt } }, // Ensure the mallId exists
+        mall: { connect: { id: mallIdInt } }, // Ensure the mallId exists
         username: email, // Set username to be the same as email
       },
     });
