@@ -103,6 +103,7 @@ model Mall {
   description String?
   totalFloors Int
   totalRooms  Int
+  // isActive       Boolean         @default(true) // 👈 New field
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   floors      Floor[]

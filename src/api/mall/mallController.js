@@ -900,10 +900,12 @@ export const disableMall = async (req, res) => {
     if (!mall) {
       return res.status(404).json({ message: "Mall not found." });
     }
+    await prisma.mallImage.deleteMany({
+      where: { mallId: parseInt(mallId) },
+    });
 
-    await prisma.mall.update({
+    await prisma.mall.delete({
       where: { id: parseInt(mallId) },
-      data: { status: "INACTIVE" },
     });
 
     res.status(200).json({ message: "Mall disabled successfully." });
