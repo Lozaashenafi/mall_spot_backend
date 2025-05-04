@@ -235,7 +235,7 @@ model Firstpayment {
 
 model Deposit {
   id        Int      @id @default(autoincrement())
-  userId    Int      // Deposit is made by a user
+  userId    Int      
   amount    Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
