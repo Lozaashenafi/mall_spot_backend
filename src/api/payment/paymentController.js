@@ -411,7 +411,6 @@ export const getMallPayments = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 export const nextPaymentDays = async (req, res) => {
   const { userId } = req.params;
 
@@ -425,7 +424,12 @@ export const nextPaymentDays = async (req, res) => {
       return res.status(404).json({ message: "Rent not found" });
     }
 
-    // If no payments exist, use rent.createdAt and PaymentDuration
+    if (!rent.paymentDuration) {
+      return res
+        .status(400)
+        .json({ message: "Rent payment duration is missing." });
+    }
+
     if (rent.payments.length === 0) {
       const nextPaymentDate = addMonths(
         new Date(rent.createdAt),
@@ -449,6 +453,7 @@ export const nextPaymentDays = async (req, res) => {
       (a, b) =>
         new Date(a.paymentDate).getTime() - new Date(b.paymentDate).getTime()
     );
+
     const totalDuration = rent.payments.length * rent.paymentDuration;
 
     const firstPaymentDate = new Date(sortedPayments[0].paymentDate);
@@ -463,7 +468,7 @@ export const nextPaymentDays = async (req, res) => {
     res.status(200).json({
       message,
       nextPaymentDate,
-      lastPaymentDate: sortedPayments[sortedPayments.length - 1].paymentDate,
+      lastPaymentDate: sortedPayments.at(-1).paymentDate,
     });
   } catch (error) {
     console.error("Error fetching next payment days:", error);
