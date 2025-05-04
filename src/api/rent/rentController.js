@@ -53,7 +53,7 @@ export const assignRent = async (req, res) => {
         userId: parseInt(tenantId),
         roomId: parseInt(roomId),
         amount: parseFloat(amount),
-        PaymentDuration: parseInt(paymentDuration),
+        paymentDuration: parseInt(paymentDuration),
       },
     });
 

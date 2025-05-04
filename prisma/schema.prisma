@@ -321,7 +321,7 @@ model Rent {
   roomId    Int     @unique
   mallId    Int
   amount    Float
-  PaymentDuration   Int
+  paymentDuration   Int
   agreementFile String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

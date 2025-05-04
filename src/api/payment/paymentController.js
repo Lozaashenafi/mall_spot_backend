@@ -106,7 +106,7 @@ export const getPaymentsByUserId = async (req, res) => {
           createdAt: rent.createdAt,
           updatedAt: rent.updatedAt,
           mallId: rent.mallId,
-          paymentDuration: rent.PaymentDuration,
+          paymentDuration: rent.paymentDuration,
         },
         room: rent.room,
       }))
@@ -139,10 +139,10 @@ export const checkRentPayments = async (req, res) => {
 
     const nextPaymentDate = addMonths(
       new Date(rent.createdAt),
-      rent.PaymentDuration
+      rent.paymentDuration
     );
     const daysLeft = differenceInDays(nextPaymentDate, currentDate);
-    const totalPayment = rent.amount * rent.PaymentDuration;
+    const totalPayment = rent.amount * rent.paymentDuration;
 
     const rentDetails = {
       rentId: rent.id,
@@ -324,7 +324,7 @@ export const makeFirstPayment = async (req, res) => {
         roomId,
         mallId,
         amount: amountFloat,
-        PaymentDuration: paymentDuration,
+        paymentDuration: paymentDuration,
         agreementFile: relativeAgreementPath,
       },
     });
@@ -429,7 +429,7 @@ export const nextPaymentDays = async (req, res) => {
     if (rent.payments.length === 0) {
       const nextPaymentDate = addMonths(
         new Date(rent.createdAt),
-        rent.PaymentDuration
+        rent.paymentDuration
       );
       const daysLeft = differenceInDays(nextPaymentDate, new Date());
 
@@ -503,7 +503,7 @@ export const getPaymentInfoByUserId = async (req, res) => {
         userName: rent.user.username,
         email: rent.user.email,
         amount: rent.amount,
-        paymentDuration: rent.PaymentDuration,
+        paymentDuration: rent.paymentDuration,
         payments: rent.payments,
         firstPayment: firstPayment,
       };
