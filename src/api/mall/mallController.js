@@ -889,6 +889,29 @@ export const getMallRents = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+export const disableMall = async (req, res) => {
+  const { mallId } = req.params;
+
+  try {
+    const mall = await prisma.mall.findUnique({
+      where: { id: parseInt(mallId) },
+    });
+
+    if (!mall) {
+      return res.status(404).json({ message: "Mall not found." });
+    }
+
+    await prisma.mall.update({
+      where: { id: parseInt(mallId) },
+      data: { status: "INACTIVE" },
+    });
+
+    res.status(200).json({ message: "Mall disabled successfully." });
+  } catch (error) {
+    console.error("Error disabling mall:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 // Middleware for image upload (use .fields() to handle multiple fields)
 export const uploadMallImagesMiddleware = uploadMallImages;
 export const uploadAgreement = uploadMallAgreement;

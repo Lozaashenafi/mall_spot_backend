@@ -16,6 +16,7 @@ import {
   getPendingMalls,
   approveMall,
   getMallRents,
+  disableMall,
 } from "./mallController.js";
 import { isAdmin } from "../../middleware/auth.js";
 
@@ -39,5 +40,6 @@ router.put("/update/:id", isAdmin, uploadMallImagesMiddleware, updateMall);
 router.post("/pricePerCare/add", addPricePerCare);
 router.get("/pricePerCare/list", listPricePerCare);
 router.get("/rents/:mallId", getMallRents);
+router.get("/disable/:mallId", disableMall);
 
 export default router;
