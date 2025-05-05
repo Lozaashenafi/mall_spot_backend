@@ -750,38 +750,28 @@ export const addPricePerCare = async (req, res) => {
 };
 export const getPendingMalls = async (req, res) => {
   try {
-    // Fetch malls with invoices that are pending review (flag = 'false')
     const malls = await prisma.mall.findMany({
       where: {
-        invoice: {
-          some: {
-            flag: "false", // Only malls with pending invoices
-          },
+        user: {
+          status: "INACTIVE",
         },
       },
       include: {
-        invoice: true, // Include invoice details in the response
-        mallImage: true, // Include mall images if necessary
+        user: true,
+        images: true,
       },
     });
 
-    if (!malls.length) {
-      return res.status(404).json({
-        success: false,
-        message: "No malls pending review",
-      });
-    }
-
     res.status(200).json({
       success: true,
-      message: "Pending malls fetched successfully",
-      malls,
+      message: "Inactive malls fetched successfully",
+      data: malls,
     });
   } catch (error) {
-    console.error("Error fetching pending malls:", error);
+    console.error("Error fetching inactive malls:", error);
     res.status(500).json({
       success: false,
-      message: "Error fetching pending malls",
+      message: "Server error while fetching inactive malls",
       error: error.message,
     });
   }
