@@ -759,7 +759,7 @@ export const getPendingMalls = async (req, res) => {
       include: {
         mall: {
           include: {
-            mallImages: true, // Use the correct field name here
+            mallImage: true, // Use the correct field name here
           },
         },
       },
