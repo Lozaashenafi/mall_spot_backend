@@ -750,22 +750,33 @@ export const addPricePerCare = async (req, res) => {
 };
 export const getPendingMalls = async (req, res) => {
   try {
-    const malls = await prisma.mall.findMany({
+    const usersWithInactiveMalls = await prisma.user.findMany({
       where: {
-        user: {
-          status: "INACTIVE",
-        },
+        role: "MALL_OWNER",
+        status: "INACTIVE",
+        mallId: { not: null }, // Ensure linked mall exists
       },
       include: {
-        user: true,
-        images: true,
+        mall: {
+          include: {
+            images: true,
+          },
+        },
       },
     });
-
+    // Extract only the mall data
+    const inactiveMalls = usersWithInactiveMalls.map((user) => ({
+      ...user.mall,
+      owner: {
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+      },
+    }));
     res.status(200).json({
       success: true,
       message: "Inactive malls fetched successfully",
-      data: malls,
+      data: inactiveMalls,
     });
   } catch (error) {
     console.error("Error fetching inactive malls:", error);
