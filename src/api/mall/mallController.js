@@ -5,8 +5,6 @@ import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
 import { google } from "googleapis";
 
-const { OAuth2 } = google.auth;
-
 export const listPricePerCare = async (req, res) => {
   const { mallId } = req.query;
 
@@ -48,8 +46,6 @@ export const listPricePerCare = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
-// Multer storage configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -104,7 +100,6 @@ export const getMallOwners = async (req, res) => {
   }
 };
 
-// Use .fields() for multiple fields (mainImage, secondaryImage, tertiaryImage)
 const uploadMallImages = multer({ storage }).fields([
   { name: "mainImage", maxCount: 1 },
   { name: "secondaryImage", maxCount: 1 },
