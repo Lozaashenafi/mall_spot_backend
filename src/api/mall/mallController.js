@@ -754,17 +754,17 @@ export const getPendingMalls = async (req, res) => {
       where: {
         role: "MALL_OWNER",
         status: "INACTIVE",
-        mallId: { not: null }, // Ensure linked mall exists
+        mallId: { not: null },
       },
       include: {
         mall: {
           include: {
-            images: true,
+            mallImages: true, // Use the correct field name here
           },
         },
       },
     });
-    // Extract only the mall data
+
     const inactiveMalls = usersWithInactiveMalls.map((user) => ({
       ...user.mall,
       owner: {
@@ -773,6 +773,7 @@ export const getPendingMalls = async (req, res) => {
         email: user.email,
       },
     }));
+
     res.status(200).json({
       success: true,
       message: "Inactive malls fetched successfully",
