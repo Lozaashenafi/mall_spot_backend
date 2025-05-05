@@ -370,6 +370,14 @@ export const registerMallByItself = async (req, res) => {
       abortEarly: false,
     });
 
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: error.details.map((err) => err.message),
+      });
+    }
+
     if (!req.files || Object.keys(req.files).length === 0) {
       return res.status(400).json({
         success: false,
@@ -385,31 +393,33 @@ export const registerMallByItself = async (req, res) => {
       description,
       totalFloors,
       totalRooms,
-      userFullName, // User's full name
-      userEmail, // User's email
-      userPassword, // User's password
+      userFullName,
+      userEmail,
+      userPassword,
     } = req.body;
 
-    // Convert numeric values
     const parsedLatitude = parseFloat(latitude);
     const parsedLongitude = parseFloat(longitude);
     const parsedTotalFloors = parseInt(totalFloors);
     const parsedTotalRooms = parseInt(totalRooms);
 
     if (isNaN(parsedLatitude) || isNaN(parsedLongitude)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid latitude or longitude" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid latitude or longitude",
+      });
     }
 
     if (isNaN(parsedTotalFloors) || isNaN(parsedTotalRooms)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid totalFloors or totalRooms" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid totalFloors or totalRooms",
+      });
     }
+
+    let mall;
     try {
-      // Create Mall entry
-      const mall = await prisma.mall.create({
+      mall = await prisma.mall.create({
         data: {
           mallName,
           latitude: parsedLatitude,
@@ -427,13 +437,14 @@ export const registerMallByItself = async (req, res) => {
           message: "Mall name already exists. Please choose another.",
         });
       }
-      console.error("Mall registration failed:", error);
-      res
-        .status(500)
-        .json({ success: false, message: "Server error during registration." });
+      console.error("Mall creation error:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to create mall.",
+      });
     }
 
-    // Save images if uploaded
+    // Save uploaded images
     const images = [];
     if (req.files?.mainImage) {
       images.push({
@@ -458,16 +469,16 @@ export const registerMallByItself = async (req, res) => {
       await prisma.mallImage.createMany({ data: images });
     }
 
-    // Create User (Mall Owner or User) and set status to INACTIVE
+    // Create user (mall owner) with INACTIVE status
     const user = await prisma.user.create({
       data: {
         fullName: userFullName,
         email: userEmail,
         username: userEmail,
-        password: userPassword, // Ensure password is hashed before saving
+        password: userPassword, // Remember to hash this in production
         role: "MALL_OWNER",
-        status: "INACTIVE", // Set the user status to INACTIVE
-        mallId: mall.id, // Link the user to the created mall
+        status: "INACTIVE",
+        mallId: mall.id,
       },
     });
 
@@ -478,7 +489,7 @@ export const registerMallByItself = async (req, res) => {
       user,
     });
   } catch (error) {
-    console.error("Error in registerMall:", error); // Log error details
+    console.error("Error in registerMallByItself:", error);
     res.status(500).json({
       success: false,
       message: "Error registering mall",

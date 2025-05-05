@@ -22,12 +22,7 @@ import { isAdmin } from "../../middleware/auth.js";
 
 const router = express.Router();
 router.post("/register", isAdmin, uploadMallImagesMiddleware, registerMall);
-router.post(
-  "/register/me",
-  isAdmin,
-  uploadMallImagesMiddleware,
-  registerMallByItself
-);
+router.post("/register/me", uploadMallImagesMiddleware, registerMallByItself);
 router.post("/owner/register", OwnerRegister);
 router.post("/save-mall-info", uploadAgreement, mallInfo);
 router.get("/malls", getMalls);
