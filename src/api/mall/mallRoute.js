@@ -35,6 +35,6 @@ router.put("/update/:id", isAdmin, uploadMallImagesMiddleware, updateMall);
 router.post("/pricePerCare/add", addPricePerCare);
 router.get("/pricePerCare/list", listPricePerCare);
 router.get("/rents/:mallId", getMallRents);
-router.get("/disable/:mallId", disableMall);
+router.delete("/disable/:mallId", disableMall);
 
 export default router;
