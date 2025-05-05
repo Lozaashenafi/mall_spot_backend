@@ -13,6 +13,10 @@ const mallSchema = {
     mainImage: Joi.any().optional(), // Allow images
     secondaryImage: Joi.any().optional(),
     tertiaryImage: Joi.any().optional(),
+    // Add these three new fields
+    userFullName: Joi.string().required(),
+    userEmail: Joi.string().email().required(),
+    userPassword: Joi.string().min(6).required(),
   }),
 };
 
