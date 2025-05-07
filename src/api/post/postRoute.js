@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.post("/add", uploadPostImages, addPosts);
 router.put("/update", uploadPostImages, updatePost);
-router.put("/hide", uploadPostImages, invisiblePost);
+router.put("/hide/:id", invisiblePost);
 router.get("/list/:id", postDetail);
 router.get("/list", getPosts);
 router.get("/mypost", getMyPosts);
