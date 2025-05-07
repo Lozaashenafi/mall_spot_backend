@@ -74,6 +74,64 @@ export const addPosts = async (req, res) => {
     res.status(500).json({ error: "Failed to create post" });
   }
 };
+export const updatePost = async (req, res) => {
+  try {
+    const { postId, title, description, price, bidDeposit, bidEndDate } =
+      req.body;
+
+    if (!postId) {
+      return res.status(400).json({ error: "postId is required for update" });
+    }
+
+    // Check if the post exists
+    const existingPost = await prisma.post.findUnique({
+      where: { id: Number(postId) },
+    });
+
+    if (!existingPost) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    // Update only the allowed fields
+    const updatedPost = await prisma.post.update({
+      where: { id: Number(postId) },
+      data: {
+        title,
+        description,
+        price: price ? parseFloat(price) : null,
+        bidDeposit: bidDeposit ? parseFloat(bidDeposit) : null,
+        bidEndDate: bidEndDate ? new Date(bidEndDate) : null,
+      },
+    });
+
+    // Handle exactly 3 image uploads
+    if (req.files && req.files.length === 3) {
+      // Delete old images
+      await prisma.postImage.deleteMany({
+        where: { postId: updatedPost.id },
+      });
+
+      // Insert new images
+      // Save image URLs to the database (if images exist)
+      if (req.files && req.files.length > 0) {
+        const imageRecords = req.files.map((file) => ({
+          postId: updatedPost.id,
+          imageURL: `/uploads/post/${file.filename}`,
+        }));
+        await prisma.postImage.createMany({ data: imageRecords });
+      }
+    } else if (req.files && req.files.length !== 3) {
+      return res.status(400).json({ error: "Exactly 3 images are required." });
+    }
+
+    res
+      .status(200)
+      .json({ post: updatedPost, message: "Post updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to update post" });
+  }
+};
 
 // Middleware for handling file uploads
 export const uploadPostImages = upload.array("images", 3); // Max 3 images
