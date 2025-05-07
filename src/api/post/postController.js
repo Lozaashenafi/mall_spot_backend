@@ -105,23 +105,34 @@ export const updatePost = async (req, res) => {
     });
 
     // Handle exactly 3 image uploads
+    let newImages = [];
+
     if (req.files && req.files.length === 3) {
-      // Delete old images
+      // Delete old images if new images are uploaded
       await prisma.postImage.deleteMany({
         where: { postId: updatedPost.id },
       });
 
       // Insert new images
-      // Save image URLs to the database (if images exist)
-      if (req.files && req.files.length > 0) {
-        const imageRecords = req.files.map((file) => ({
-          postId: updatedPost.id,
-          imageURL: `/uploads/post/${file.filename}`,
-        }));
-        await prisma.postImage.createMany({ data: imageRecords });
-      }
+      newImages = req.files.map((file) => ({
+        postId: updatedPost.id,
+        imageURL: `/uploads/post/${file.filename}`, // Change this if using cloud storage
+      }));
     } else if (req.files && req.files.length !== 3) {
       return res.status(400).json({ error: "Exactly 3 images are required." });
+    }
+
+    // If no new images, keep the old ones
+    if (newImages.length === 0) {
+      newImages = existingPost.images.map((img) => ({
+        postId: updatedPost.id,
+        imageURL: img.imageURL, // Keep existing images
+      }));
+    }
+
+    // Save image URLs to the database
+    if (newImages.length > 0) {
+      await prisma.postImage.createMany({ data: newImages });
     }
 
     res
