@@ -252,3 +252,30 @@ export const postDetail = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch post" });
   }
 };
+export const invisiblePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if the post exists
+    const existingPost = await prisma.post.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existingPost) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    // Update the post status to "INVISIBLE"
+    await prisma.post.update({
+      where: { id: Number(id) },
+      data: {
+        status: "INVISIBLE",
+      },
+    });
+
+    res.status(200).json({ message: "Post hidden successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to hide post" });
+  }
+};
