@@ -150,7 +150,12 @@ export const postDetail = async (req, res) => {
       where: { id: parseInt(id) },
       include: {
         user: true,
-        mall: true,
+        mall: {
+          include: {
+            agreements: true,
+            mallImage: true,
+          },
+        },
         room: {
           include: {
             category: true, // This should be nested inside room.include
