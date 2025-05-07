@@ -84,6 +84,9 @@ export const getPosts = async (req, res) => {
       where: {
         status: "PENDING",
       },
+      orderBy: {
+        createdAt: "desc",
+      },
       include: {
         user: true,
         mall: {
