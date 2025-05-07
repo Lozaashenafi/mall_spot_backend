@@ -342,7 +342,7 @@ export const makeFirstPayment = async (req, res) => {
     const acceptNotification = await prisma.notification.create({
       data: {
         userId: acceptedUser.post.userId,
-        message: `User ${acceptedUser.user.username} has registered as a tenant and made their first payment.`,
+        message: `User ${acceptedUser.user.fullName} has registered as a tenant and made their first payment.`,
         type: "PAYMENT",
       },
     });
@@ -506,6 +506,7 @@ export const getPaymentInfoByUserId = async (req, res) => {
         rentId: rent.id,
         roomId: rent.roomId,
         userName: rent.user.username,
+        fullName: rent.user.fullName,
         email: rent.user.email,
         amount: rent.amount,
         paymentDuration: rent.paymentDuration,
