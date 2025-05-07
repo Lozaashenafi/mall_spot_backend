@@ -11,7 +11,7 @@ import {
 const router = express.Router();
 
 router.post("/add", uploadPostImages, addPosts);
-router.post("/update", uploadPostImages, updatePost);
+router.put("/update", uploadPostImages, updatePost);
 router.get("/list/:id", postDetail);
 router.get("/list", getPosts);
 router.get("/mypost", getMyPosts);
