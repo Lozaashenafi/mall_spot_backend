@@ -2,8 +2,8 @@ import multer from "multer";
 import mallSchema from "./mallSchema.js";
 import prisma from "../../config/prismaClient.js";
 import bcrypt from "bcryptjs";
-import nodemailer from "nodemailer";
-import { google } from "googleapis";
+// import nodemailer from "nodemailer";
+// import { google } from "googleapis";
 
 export const listPricePerCare = async (req, res) => {
   const { mallId } = req.query;
@@ -464,13 +464,13 @@ export const registerMallByItself = async (req, res) => {
       await prisma.mallImage.createMany({ data: images });
     }
 
-    // Create user (mall owner) with INACTIVE status
+    const hashedPassword = await bcrypt.hash(userPassword, 10);
     const user = await prisma.user.create({
       data: {
         fullName: userFullName,
         email: userEmail,
         username: userEmail,
-        password: userPassword, // Remember to hash this in production
+        password: hashedPassword, // Remember to hash this in production
         role: "MALL_OWNER",
         status: "INACTIVE",
         mallId: mall.id,
