@@ -818,47 +818,46 @@ export const approveMall = async (req, res) => {
       data: { status: "ACTIVE" },
     });
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS, // App password if 2FA is enabled
-      },
-      secure: true, // Use SSL
-      port: 465,
-    });
+    // const transporter = nodemailer.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     user: process.env.EMAIL_USER,
+    //     pass: process.env.EMAIL_PASS, // App password if 2FA is enabled
+    //   },
+    //   secure: true, // Use SSL
+    //   port: 465,
+    // });
 
-    const mailOptions = {
-      from: '"MallSpot Team" <MallSpot@gmail.com>',
-      to: user.email,
-      subject: "Your Mall Registration is Approved!",
-      html: `
-        <p>Dear ${user.username},</p>
-        <p>Congratulations! Your mall <strong>${mall.mallName}</strong> has been approved in <strong>MallSpot</strong>.</p>
-        <p>You can now log in to the system using your registered email and password.</p>
-        <p>Welcome aboard!</p>
-        <br />
-        <p>Best regards,</p>
-        <p><strong>MallSpot Team</strong></p>
-      `,
-    };
+    // const mailOptions = {
+    //   from: '"MallSpot Team" <MallSpot@gmail.com>',
+    //   to: user.email,
+    //   subject: "Your Mall Registration is Approved!",
+    //   html: `
+    //     <p>Dear ${user.username},</p>
+    //     <p>Congratulations! Your mall <strong>${mall.mallName}</strong> has been approved in <strong>MallSpot</strong>.</p>
+    //     <p>You can now log in to the system using your registered email and password.</p>
+    //     <p>Welcome aboard!</p>
+    //     <br />
+    //     <p>Best regards,</p>
+    //     <p><strong>MallSpot Team</strong></p>
+    //   `,
+    // };
 
-    await transporter.sendMail(mailOptions);
+    // await transporter.sendMail(mailOptions);
 
     // Update invoice flag if present
-    if (mall.invoice && mall.invoice.length > 0) {
-      await prisma.invoice.updateMany({
-        where: { mallId: mall.id },
-        data: {
-          flag: "true",
-        },
-      });
-    }
+    // if (mall.invoice && mall.invoice.length > 0) {
+    //   await prisma.invoice.updateMany({
+    //     where: { mallId: mall.id },
+    //     data: {
+    //       flag: "true",
+    //     },
+    //   });
+    // }
 
     res.status(200).json({
       success: true,
-      message:
-        "Mall approved, user status activated, invoice updated, and email sent",
+      message: "Mall approved, user status activated",
       mall,
     });
   } catch (error) {
